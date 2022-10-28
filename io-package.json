@@ -1,0 +1,111 @@
+{
+	"common": {
+		"name": "tesla-wallconnector3",
+		"version": "0.0.1",
+		"news": {
+			"0.0.1": {
+				"en": "initial release",
+				"de": "Erstveröffentlichung",
+				"ru": "Начальная версия",
+				"pt": "lançamento inicial",
+				"nl": "Eerste uitgave",
+				"fr": "Première version",
+				"it": "Versione iniziale",
+				"es": "Versión inicial",
+				"pl": "Pierwsze wydanie",
+				"zh-cn": "首次出版"
+			}
+		},
+		"docs": {
+            "en": "docs/en/README.md",
+            "de": "docs/de/README.md"
+        },
+		"titleLang": {
+			"en": "Tesla Wall Connector Gen 3",
+			"de": "Tesla Wandanschluss Gen 3",
+			"ru": "Настенный разъем Tesla Gen 3",
+			"pt": "Conector de parede Tesla Gen 3",
+			"nl": "Tesla Wall Connector Gen 3",
+			"fr": "Connecteur mural Tesla Gen 3",
+			"it": "Connettore a parete Tesla Gen 3",
+			"es": "Conector de pared Tesla Gen 3",
+			"pl": "Złącze ścienne Tesla Gen 3",
+			"zh-cn": "Tesla 墙壁连接器 Gen 3"
+		},
+		"desc": {
+			"en": "This adapter reads API information from a Tesla Wall Connector Gen 3",
+			"de": "Dieser Adapter liest API-Informationen von einem Tesla Wall Connector Gen 3",
+			"ru": "Этот адаптер считывает информацию API с настенного разъема Tesla 3-го поколения.",
+			"pt": "Este adaptador lê informações de API de um Tesla Wall Connector Gen 3",
+			"nl": "Deze adapter leest API-informatie van een Tesla Wall Connector Gen 3",
+			"fr": "Cet adaptateur lit les informations API d'un connecteur mural Tesla Gen 3",
+			"it": "Questo adattatore legge le informazioni API da un Tesla Wall Connector Gen 3",
+			"es": "Este adaptador lee información API de un Tesla Wall Connector Gen 3",
+			"pl": "Ten adapter odczytuje informacje API ze złącza Tesla Wall Connector Gen 3",
+			"zh-cn": "此适配器从 Tesla Wall Connector Gen 3 读取 API 信息"
+		},
+		"authors": [
+			"NoBl <github@bluemle.org>"
+		],
+		"keywords": [
+			"tesla",
+			"vehicle",
+			"energy"
+		],
+		"license": "MIT",
+		"platform": "Javascript/Node.js",
+		"main": "main.js",
+		"icon": "tesla-wallconnector3.png",
+		"enabled": false,
+		"extIcon": "https://raw.githubusercontent.com/nobl/ioBroker.tesla-wallconnector3/master/admin/tesla-wallconnector3.png",
+		"readme": "https://github.com/nobl/ioBroker.tesla-wallconnector3/blob/master/README.md",
+		"loglevel": "info",
+		"mode": "daemon",
+		"type": "vehicle",
+		"compact": true,
+		"connectionType": "local",
+		"dataSource": "poll",
+		"adminUI": {
+			"config": "json"
+		},
+		"dependencies": [
+			{
+				"js-controller": ">=3.3.22"
+			}
+		],
+		"globalDependencies": [
+			{
+				"admin": ">=5.1.13"
+			}
+		]
+	},
+	"native": {
+		"teslawb3ip": "0.0.0.0",
+        "interval": 10,
+		"pollingTimeout": 5000,
+		"retries": 10,
+		"retrymultiplier": 2
+	},
+	"objects": [],
+	"instanceObjects": [{
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        }, {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "Device or service connected",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        }
+    ]
+}

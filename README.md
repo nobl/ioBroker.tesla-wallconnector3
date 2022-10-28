@@ -416,7 +416,7 @@ Please be aware that most (if not all) descriptions might be way off and might r
 
 
 ## Changelog
-### 0.0.1 (Nobl)
+### 0.1.0 (Nobl)
 * Initial release
 
 

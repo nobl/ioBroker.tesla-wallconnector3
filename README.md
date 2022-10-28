@@ -17,7 +17,7 @@
 [Dokumentation DE](docs/de/README.md)<br>
 [Documentation EN](docs/en/README.md)
 
-Targeted at the Tesla Wall Connector Gen 3.
+Targeted at the Tesla Wall Connector Gen 3 available at https://shop.tesla.com/de_de/product/gen-3-wall-connector .
 Only provides read access to API data (write isn't supported by the API).
 
 ## Installation

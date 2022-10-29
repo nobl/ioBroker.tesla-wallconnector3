@@ -13,6 +13,7 @@
 				"it": "Versione iniziale",
 				"es": "Versión inicial",
 				"pl": "Pierwsze wydanie",
+				"uk": "початковий реліз",
 				"zh-cn": "首次出版"
 			}
 		},
@@ -30,6 +31,7 @@
 			"it": "Connettore a parete Tesla Gen 3",
 			"es": "Conector de pared Tesla Gen 3",
 			"pl": "Złącze ścienne Tesla Gen 3",
+			"uk": "Tesla Wall Connector Ген 3",
 			"zh-cn": "Tesla 墙壁连接器 Gen 3"
 		},
 		"desc": {
@@ -42,6 +44,7 @@
 			"it": "Questo adattatore legge le informazioni API da un Tesla Wall Connector Gen 3",
 			"es": "Este adaptador lee información API de un Tesla Wall Connector Gen 3",
 			"pl": "Ten adapter odczytuje informacje API ze złącza Tesla Wall Connector Gen 3",
+			"uk": "Цей адаптер зчитуває інформацію API від Tesla Wall Connector Gen 3",
 			"zh-cn": "此适配器从 Tesla Wall Connector Gen 3 读取 API 信息"
 		},
 		"authors": [

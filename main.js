@@ -233,13 +233,13 @@ class TeslaWallconnector3 extends utils.Adapter {
 		if (cacheObj.type != valueType) {
 			this.log.debug("(doState) Updating object: " + name + " (type): " + cacheObj.type + " -> " + valueType);
 			await this.extendObject(name, {common: {type: valueType}});
-			cacheObj.type = typeof(value);
+			cacheObj.type = valueType;
 			this.cachePutObj(name, cacheObj);
 		}
 		if (cacheObj.unit != unit) {
 			this.log.debug("(doState) Updating object: " + name + " (unit): " + cacheObj.unit + " -> " + unit);
 			await this.extendObject(name, {common: {unit: unit}});
-			cacheObj.unit = typeof(unit);
+			cacheObj.unit = unit;
 			this.cachePutObj(name, cacheObj);
 		}
 		if (cacheObj.write != write) {

@@ -8,7 +8,7 @@ const state_trans = require(__dirname + "/lib/state_trans.js");
 let retry = 0; // retry-counter
 let langState = "en";
 let url = "";
-let cache = {};
+const cache = {};
 
 class TeslaWallconnector3 extends utils.Adapter {
 

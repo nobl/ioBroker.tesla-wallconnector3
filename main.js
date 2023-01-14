@@ -8,7 +8,7 @@ const state_trans = require(__dirname + "/lib/state_trans.js");
 let retry = 0; // retry-counter
 let langState = "en";
 let url = "";
-var cache = {};
+let cache = {};
 
 class TeslaWallconnector3 extends utils.Adapter {
 
@@ -86,7 +86,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 		this.log.debug("(checkConf) WallBox-IP: " + this.config.teslawb3ip);
 		url = "http://" + this.config.teslawb3ip + "/api/1/";
 	}
-	
+
 	/**
 	 * Reads system language
 	 * Fallback to en if not available
@@ -180,7 +180,6 @@ class TeslaWallconnector3 extends utils.Adapter {
 		}
 	}
 
-
 	/**
 	 * sets a state's value and creates the state if it doesn't exist yet
 	 */
@@ -191,12 +190,12 @@ class TeslaWallconnector3 extends utils.Adapter {
 			return;
 		}
 		this.log.silly("(doState) Update: " + name + ": " + value);
-		
+
 		if (!await this.cacheCheck(name)) { // check if object in cache
 			// Object not in cache - try to read from DB
 			const obj = await this.getObjectAsync(name);
 			if (!obj) { // object not in db - create it
-				this.log.debug("Object does not exist: " + name)
+				this.log.debug("Object does not exist: " + name);
 				await this.setObjectNotExistsAsync(name, {
 					type: "state",
 					common: {
@@ -212,13 +211,13 @@ class TeslaWallconnector3 extends utils.Adapter {
 				await this.cachePut(name, "", description, typeof(value), unit, write); // value will be written later - so don't cache it yet!
 			} else {
 				// object found in db - add to cache
-				const state = await this.getStateAsync(name)
+				const state = await this.getStateAsync(name);
 				await this.cachePut(name, state.val, obj.common.name, obj.common.type, obj.common.unit, obj.common.write);
 			}
 		}
-		
+
 		const cacheObj = await this.cacheGet(name); // get cached object - cannot be null because written right before
-		
+
 		// Check object for changes
 		if (cacheObj.description != description) {
 			this.log.debug("(doState) Updating object: " + name + " (desc): " + cacheObj.description + " -> " + description);
@@ -301,7 +300,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 			}
 		}
 	}
-	
+
 	cacheCheck(key) {
 		const entry = cache[key];
 		if (entry) {
@@ -310,7 +309,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 		}
 		return false;
 	}
-	
+
 	cacheGet(key) {
 		const entry = cache[key];
 		if (entry) {
@@ -320,7 +319,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 			return null;
 		}
 	}
-	
+
 	cachePut(key, value, description, type, unit, write) {
 		this.log.debug("Cache put: " + key + "[" + value + ", " + description + ", " + type + ", " + unit + ", " + write + "]");
 		cache[key] = {
@@ -331,12 +330,12 @@ class TeslaWallconnector3 extends utils.Adapter {
 			write: write
 		};
 	}
-	
+
 	cachePutObj(key, obj) {
 		this.log.debug("Cache put obj: " + key + "[" .JSON.stringify(obj) + "]");
 		cache[key] = obj;
 	}
-	
+
 	cacheUpdateValue(key, value) {
 		this.log.debug("Cache update: " + key + "[" + value + "]");
 		const entry = this.cacheGet(key);

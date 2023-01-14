@@ -21,19 +21,13 @@ Targeted at the Tesla Wall Connector Gen 3 available at https://shop.tesla.com/d
 Only provides read access to API data (write isn't supported by the API).
 
 ## Installation
-You can either install the adapter via the ioBroker web interface or on your local machine via npm.
+You can install the adapter via the ioBroker web interface.
 
-### Browser-based
 1. Open your ioBroker web interface in a browser (eg: 192.168.178.42:8081)
 2. Click on Tab "Adapters"
 3. Type "tesla-wallconnector3" in the filter
 4. Click on the  "+" symbol of the Tesla Wall Connector Gen 3 adapter
 
-### Local machine
-Navigate into your iobroker folder and execute the following command: 
-```bash
-npm i iobroker.tesla-wallconnector3
-```
 
 ## Setup
 Additional to the adapter installation you have to add an instance of the adapter.

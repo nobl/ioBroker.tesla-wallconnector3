@@ -1,14 +1,15 @@
 "use strict";
 
 const utils = require("@iobroker/adapter-core");
-const axios = require("axios");
+const axios = require("axios").default;
 const state_attr = require(__dirname + "/lib/state_attr.js");
 const state_trans = require(__dirname + "/lib/state_trans.js");
 
 let retry = 0; // retry-counter
 let langState = "en";
 let url = "";
-
+let unloaded = false;
+const knownObjects = {};
 
 class TeslaWallconnector3 extends utils.Adapter {
 
@@ -49,6 +50,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	 */
 	onUnload(callback) {
 		try {
+			unloaded = true;
 			if (this.timer) clearTimeout(this.timer);
 			this.log.info("cleaned everything up...");
 			this.setState("info.connection", false, true);
@@ -86,7 +88,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 		this.log.debug("(checkConf) WallBox-IP: " + this.config.teslawb3ip);
 		url = "http://" + this.config.teslawb3ip + "/api/1/";
 	}
-	
+
 	/**
 	 * Reads system language
 	 * Fallback to en if not available
@@ -94,7 +96,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	async getSysLang() {
 		try {
 			const ret = await this.getForeignObjectAsync("system.config");
-			langState = ret.common.language ? ret.common.language : "en";
+			langState = ret && ret.common && ret.common.language ? ret.common.language : "en";
 		} catch (error) {
 			this.log.error("(getSysLang) Reverting to default language (en).");
 			langState = "en";
@@ -167,6 +169,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 				await this.evalPoll(obj, key);
 			}
 			retry = 0;
+			if (unloaded) return;
 			this.timer = setTimeout(() => this.readTeslaWC3(), this.config.interval * 1000);
 		} catch (error) {
 			if ((retry == this.config.retries) && this.config.retries < 999) {
@@ -191,44 +194,48 @@ class TeslaWallconnector3 extends utils.Adapter {
 			return;
 		}
 		this.log.silly("(doState) Update: " + name + ": " + value);
-		await this.setObjectNotExistsAsync(name, {
-			type: "state",
-			common: {
-				name: description,
-				type: typeof(value),
-				role: "value",
-				unit: unit,
-				read: true,
-				write: write
-			},
-			native: {}
-		});
+
+		const valueType = value !== null && value !== undefined ? typeof value : "mixed";
 
 		// Check object for changes:
-		const obj = await this.getObjectAsync(name);
-		if (obj.common.name != description) {
-			this.log.debug("(doState) Updating object: " + name + " (desc): " + obj.common.name + " -> " + description);
-			await this.extendObject(name, {common: {name: description}});
+		const obj = knownObjects[name] ? knownObjects[name] : await this.getObjectAsync(name);
+		if (obj) {
+			const newCommon = {};
+			if (obj.common.name !== description) {
+				this.log.debug("(doState) Updating object: " + name + " (desc): " + obj.common.name + " -> " + description);
+				newCommon.name = description;
+			}
+			if (obj.common.type !== valueType) {
+				this.log.debug("(doState) Updating object: " + name + " (type): " + obj.common.type + " -> " + typeof value);
+				newCommon.type = valueType;
+			}
+			if (obj.common.unit !== unit) {
+				this.log.debug("(doState) Updating object: " + name + " (unit): " + obj.common.unit + " -> " + unit);
+				newCommon.unit = unit;
+			}
+			if (obj.common.write !== write) {
+				this.log.debug("(doState) Updating object: " + name + " (write): " + obj.common.write + " -> " + write);
+				newCommon.write = write;
+			}
+			if (Object.keys(newCommon).length > 0) {
+				await this.extendObjectAsync(name, { common: newCommon });
+			}
+		} else {
+			knownObjects[name] = {
+				type: "state",
+				common: {
+					name: description,
+					type: valueType,
+					role: "value",
+					unit: unit,
+					read: true,
+					write: write
+				},
+				native: {}
+			};
+			await this.setObjectNotExistsAsync(name, knownObjects[name]);
 		}
-		if (obj.common.type != typeof(value)) {
-			this.log.debug("(doState) Updating object: " + name + " (type): " + obj.common.type + " -> " + typeof(value));
-			await this.extendObject(name, {common: {type: typeof(value)}});
-		}
-		if (obj.common.unit != unit) {
-			this.log.debug("(doState) Updating object: " + name + " (unit): " + obj.common.unit + " -> " + unit);
-			await this.extendObject(name, {common: {unit: unit}});
-		}
-		if (obj.common.write != write) {
-			this.log.debug("(doState) Updating object: " + name + " (write): " + obj.common.write + " -> " + write);
-			await this.extendObject(name, {common: {write: write}});
-		}
-
-		const oldState = await this.getStateAsync(name);
-		if (oldState) {
-			if (oldState.val === value) return;
-			this.log.debug("(doState) Update: " + name + ": " + oldState.val + " -> " + value);
-		}
-		await this.setStateAsync(name, {
+		await this.setStateChangedAsync(name, {
 			val: value,
 			ack: true
 		});
@@ -261,6 +268,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	 * creates / updates the state.
 	 */
 	evalPoll(obj, key1) {
+		if (unloaded) return;
 		for (const[key2, value2] of Object.entries(obj)) {
 			if (value2 !== "VARIABLE_NOT_FOUND" && key2 !== "OBJECT_NOT_FOUND") {
 				const key = key1 + "." + key2;
@@ -297,7 +305,7 @@ const ValueTyping = (key, value) => {
 	if (isBool) {
 		return (value === 0) ? false : true;
 	} else if (multiply !== 1) {
-		return (value *= multiply).toFixed(2);
+		return parseFloat((value * multiply).toFixed(2));
 	} else {
 		return value;
 	}

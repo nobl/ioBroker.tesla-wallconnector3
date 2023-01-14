@@ -193,7 +193,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 			return;
 		}
 		this.log.silly("(doState) Update: " + name + ": " + value);
-		
+
 		const valueType = value !== null && value !== undefined ? typeof value : "mixed";
 
 		if (!await this.cacheCheck(name)) { // check if object in cache

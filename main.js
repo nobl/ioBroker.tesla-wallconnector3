@@ -1,13 +1,14 @@
 "use strict";
 
 const utils = require("@iobroker/adapter-core");
-const axios = require("axios");
+const axios = require("axios").default;
 const state_attr = require(__dirname + "/lib/state_attr.js");
 const state_trans = require(__dirname + "/lib/state_trans.js");
 
 let retry = 0; // retry-counter
 let langState = "en";
 let url = "";
+let unloaded = false;
 const cache = {};
 
 class TeslaWallconnector3 extends utils.Adapter {
@@ -49,6 +50,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	 */
 	onUnload(callback) {
 		try {
+			unloaded = true;
 			if (this.timer) clearTimeout(this.timer);
 			this.log.info("cleaned everything up...");
 			this.setState("info.connection", false, true);
@@ -94,7 +96,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	async getSysLang() {
 		try {
 			const ret = await this.getForeignObjectAsync("system.config");
-			langState = ret.common.language ? ret.common.language : "en";
+			langState = ret && ret.common && ret.common.language ? ret.common.language : "en";
 		} catch (error) {
 			this.log.error("(getSysLang) Reverting to default language (en).");
 			langState = "en";
@@ -167,6 +169,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 				await this.evalPoll(obj, key);
 			}
 			retry = 0;
+			if (unloaded) return;
 			this.timer = setTimeout(() => this.readTeslaWC3(), this.config.interval * 1000);
 		} catch (error) {
 			if ((retry == this.config.retries) && this.config.retries < 999) {
@@ -190,6 +193,8 @@ class TeslaWallconnector3 extends utils.Adapter {
 			return;
 		}
 		this.log.silly("(doState) Update: " + name + ": " + value);
+		
+		const valueType = value !== null && value !== undefined ? typeof value : "mixed";
 
 		if (!await this.cacheCheck(name)) { // check if object in cache
 			// Object not in cache - try to read from DB
@@ -200,7 +205,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 					type: "state",
 					common: {
 						name: description,
-						type: typeof(value),
+						type: valueType,
 						role: "value",
 						unit: unit,
 						read: true,
@@ -208,7 +213,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 					},
 					native: {}
 				});
-				await this.cachePut(name, "", description, typeof(value), unit, write); // value will be written later - so don't cache it yet!
+				await this.cachePut(name, "", description, valueType, unit, write); // value will be written later - so don't cache it yet!
 			} else {
 				// object found in db - add to cache
 				const state = await this.getStateAsync(name);
@@ -225,9 +230,9 @@ class TeslaWallconnector3 extends utils.Adapter {
 			cacheObj.description = description;
 			this.cachePutObj(name, cacheObj);
 		}
-		if (cacheObj.type != typeof(value)) {
-			this.log.debug("(doState) Updating object: " + name + " (type): " + cacheObj.type + " -> " + typeof(value));
-			await this.extendObject(name, {common: {type: typeof(value)}});
+		if (cacheObj.type != valueType) {
+			this.log.debug("(doState) Updating object: " + name + " (type): " + cacheObj.type + " -> " + valueType);
+			await this.extendObject(name, {common: {type: valueType}});
 			cacheObj.type = typeof(value);
 			this.cachePutObj(name, cacheObj);
 		}
@@ -247,7 +252,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 		// update value in db if changed
 		if (cacheObj.value === value) return;
 		this.log.debug("(doState) Update: " + name + ": " + cacheObj.value + " -> " + value);
-		await this.setStateAsync(name, {
+		await this.setStateChangedAsync(name, {
 			val: value,
 			ack: true
 		});
@@ -281,6 +286,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	 * creates / updates the state.
 	 */
 	evalPoll(obj, key1) {
+		if (unloaded) return;
 		for (const[key2, value2] of Object.entries(obj)) {
 			if (value2 !== "VARIABLE_NOT_FOUND" && key2 !== "OBJECT_NOT_FOUND") {
 				const key = key1 + "." + key2;
@@ -360,7 +366,7 @@ const ValueTyping = (key, value) => {
 	if (isBool) {
 		return (value === 0) ? false : true;
 	} else if (multiply !== 1) {
-		return (value *= multiply).toFixed(2);
+		return parseFloat((value * multiply).toFixed(2));
 	} else {
 		return value;
 	}

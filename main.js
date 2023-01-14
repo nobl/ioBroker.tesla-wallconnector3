@@ -8,7 +8,7 @@ const state_trans = require(__dirname + "/lib/state_trans.js");
 let retry = 0; // retry-counter
 let langState = "en";
 let url = "";
-
+var cache = {};
 
 class TeslaWallconnector3 extends utils.Adapter {
 
@@ -191,47 +191,68 @@ class TeslaWallconnector3 extends utils.Adapter {
 			return;
 		}
 		this.log.silly("(doState) Update: " + name + ": " + value);
-		await this.setObjectNotExistsAsync(name, {
-			type: "state",
-			common: {
-				name: description,
-				type: typeof(value),
-				role: "value",
-				unit: unit,
-				read: true,
-				write: write
-			},
-			native: {}
-		});
-
-		// Check object for changes:
-		const obj = await this.getObjectAsync(name);
-		if (obj.common.name != description) {
-			this.log.debug("(doState) Updating object: " + name + " (desc): " + obj.common.name + " -> " + description);
+		
+		if (!await this.cacheCheck(name)) { // check if object in cache
+			// Object not in cache - try to read from DB
+			const obj = await this.getObjectAsync(name);
+			if (!obj) { // object not in db - create it
+				this.log.debug("Object does not exist: " + name)
+				await this.setObjectNotExistsAsync(name, {
+					type: "state",
+					common: {
+						name: description,
+						type: typeof(value),
+						role: "value",
+						unit: unit,
+						read: true,
+						write: write
+					},
+					native: {}
+				});
+				await this.cachePut(name, "", description, typeof(value), unit, write); // value will be written later - so don't cache it yet!
+			} else {
+				// object found in db - add to cache
+				const state = await this.getStateAsync(name)
+				await this.cachePut(name, state.val, obj.common.name, obj.common.type, obj.common.unit, obj.common.write);
+			}
+		}
+		
+		const cacheObj = await this.cacheGet(name); // get cached object - cannot be null because written right before
+		
+		// Check object for changes
+		if (cacheObj.description != description) {
+			this.log.debug("(doState) Updating object: " + name + " (desc): " + cacheObj.description + " -> " + description);
 			await this.extendObject(name, {common: {name: description}});
+			cacheObj.description = description;
+			this.cachePutObj(name, cacheObj);
 		}
-		if (obj.common.type != typeof(value)) {
-			this.log.debug("(doState) Updating object: " + name + " (type): " + obj.common.type + " -> " + typeof(value));
+		if (cacheObj.type != typeof(value)) {
+			this.log.debug("(doState) Updating object: " + name + " (type): " + cacheObj.type + " -> " + typeof(value));
 			await this.extendObject(name, {common: {type: typeof(value)}});
+			cacheObj.type = typeof(value);
+			this.cachePutObj(name, cacheObj);
 		}
-		if (obj.common.unit != unit) {
-			this.log.debug("(doState) Updating object: " + name + " (unit): " + obj.common.unit + " -> " + unit);
+		if (cacheObj.unit != unit) {
+			this.log.debug("(doState) Updating object: " + name + " (unit): " + cacheObj.unit + " -> " + unit);
 			await this.extendObject(name, {common: {unit: unit}});
+			cacheObj.unit = typeof(unit);
+			this.cachePutObj(name, cacheObj);
 		}
-		if (obj.common.write != write) {
-			this.log.debug("(doState) Updating object: " + name + " (write): " + obj.common.write + " -> " + write);
+		if (cacheObj.write != write) {
+			this.log.debug("(doState) Updating object: " + name + " (write): " + cacheObj.write + " -> " + write);
 			await this.extendObject(name, {common: {write: write}});
+			cacheObj.write = write;
+			this.cachePutObj(name, cacheObj);
 		}
 
-		const oldState = await this.getStateAsync(name);
-		if (oldState) {
-			if (oldState.val === value) return;
-			this.log.debug("(doState) Update: " + name + ": " + oldState.val + " -> " + value);
-		}
+		// update value in db if changed
+		if (cacheObj.value === value) return;
+		this.log.debug("(doState) Update: " + name + ": " + cacheObj.value + " -> " + value);
 		await this.setStateAsync(name, {
 			val: value,
 			ack: true
 		});
+		await this.cacheUpdateValue(name, value);
 		await this.doDecode(name, value);
 	}
 
@@ -279,6 +300,49 @@ class TeslaWallconnector3 extends utils.Adapter {
 				}
 			}
 		}
+	}
+	
+	cacheCheck(key) {
+		const entry = cache[key];
+		if (entry) {
+			this.log.debug("Cache hit: " + key);
+			return true;
+		}
+		return false;
+	}
+	
+	cacheGet(key) {
+		const entry = cache[key];
+		if (entry) {
+			this.log.debug("Cache read: " + key + "[" + JSON.stringify(entry) + "]");
+			return entry;
+		} else {
+			return null;
+		}
+	}
+	
+	cachePut(key, value, description, type, unit, write) {
+		this.log.debug("Cache put: " + key + "[" + value + ", " + description + ", " + type + ", " + unit + ", " + write + "]");
+		cache[key] = {
+			value: value,
+			description: description,
+			type: type,
+			unit: unit,
+			write: write
+		};
+	}
+	
+	cachePutObj(key, obj) {
+		this.log.debug("Cache put obj: " + key + "[" .JSON.stringify(obj) + "]");
+		cache[key] = obj;
+	}
+	
+	cacheUpdateValue(key, value) {
+		this.log.debug("Cache update: " + key + "[" + value + "]");
+		const entry = this.cacheGet(key);
+		entry.value = value;
+		cache[key] = entry;
+		this.log.debug("Cache write: " + key + "[" + JSON.stringify(entry) + "]");
 	}
 
 }

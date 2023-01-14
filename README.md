@@ -410,7 +410,10 @@ Please be aware that most (if not all) descriptions might be way off and might r
 
 
 ## Changelog
-### 0.1.0 (Nobl)
+### 0.1.1 (NoBl)
+* Improvements
+
+### 0.1.0 (NoBl)
 * Initial release
 
 

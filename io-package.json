@@ -1,8 +1,21 @@
 {
 	"common": {
 		"name": "tesla-wallconnector3",
-		"version": "0.1.0",
+		"version": "0.1.1",
 		"news": {
+			"0.1.1": {
+				"en": "Improvements",
+				"de": "Verbesserungen",
+				"ru": "улучшения",
+				"pt": "melhorias",
+				"nl": "verbeteringen",
+				"fr": "améliorations apportées",
+				"it": "miglioramenti",
+				"es": "mejoras",
+				"pl": "poprawa",
+				"uk": "поліпшення",
+				"zh-cn": "改进"
+			},
 			"0.1.0": {
 				"en": "initial release",
 				"de": "Erstveröffentlichung",

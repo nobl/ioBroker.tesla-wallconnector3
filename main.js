@@ -6,7 +6,7 @@ const state_attr = require(__dirname + "/lib/state_attr.js");
 const state_trans = require(__dirname + "/lib/state_trans.js");
 
 let retry = 0; // retry-counter
-let langState = "";
+let langState = "en";
 let url = "";
 
 
@@ -33,6 +33,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 		// Reset the connection indicator during startup
 		this.setState("info.connection", false, true);
 		try {
+			await this.getSysLang();
 			await this.checkConfig();
 			await this.checkConnection();
 			await this.readTeslaWC3();
@@ -82,13 +83,23 @@ class TeslaWallconnector3 extends utils.Adapter {
 			this.log.warn("(checkConf) Config retry multiplier " + this.config.retrymultiplier + " not [1..10] seconds. Using default: 2");
 			this.config.retrymultiplier = 2;
 		}
-
+		this.log.debug("(checkConf) WallBox-IP: " + this.config.teslawb3ip);
 		url = "http://" + this.config.teslawb3ip + "/api/1/";
-
-		this.getForeignObject("system.config", (err, state) => {
-			langState = state.common.language;
-			this.log.debug("Language set: " + langState);
-		});
+	}
+	
+	/**
+	 * Reads system language
+	 * Fallback to en if not available
+	 */
+	async getSysLang() {
+		try {
+			const ret = await this.getForeignObjectAsync("system.config");
+			langState = ret.common.language ? ret.common.language : "en";
+		} catch (error) {
+			this.log.error("(getSysLang) Reverting to default language (en).");
+			langState = "en";
+		}
+		this.log.debug("Language: " + langState);
 	}
 
 	/**
@@ -109,7 +120,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	 * Read from url via axios
 	 * @param url to read from
 	 */
-	async doGet(pUrl, caller, pollingTimeout) {
+	doGet(pUrl, caller, pollingTimeout) {
 		return new Promise(function (resolve, reject) {
 			axios({
 				method: "get",
@@ -249,7 +260,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	 * evaluates data polled from system.
 	 * creates / updates the state.
 	 */
-	async evalPoll(obj, key1) {
+	evalPoll(obj, key1) {
 		for (const[key2, value2] of Object.entries(obj)) {
 			if (value2 !== "VARIABLE_NOT_FOUND" && key2 !== "OBJECT_NOT_FOUND") {
 				const key = key1 + "." + key2;

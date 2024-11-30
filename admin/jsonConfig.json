@@ -1,9 +1,17 @@
 {
 	"i18n": false,
 	"type": "panel",
+	"tabsStyle": {
+		width: "calc(100% - 100px)"
+	},
 	"items": {
 		"teslawb3ip": {
 			"type": "text",
+			"xs": 12,
+			"sm": 12,
+			"md": 6,
+			"lg": 4,
+			"xl": 4,
 			"label": {
 				"en": "IP / FQDN of Tesla Wall Connector Gen 3",
 				"de": "IP / FQDN des Tesla Wall Connector Gen 3",
@@ -34,7 +42,12 @@
 			"newLine": true
 		},
 		"interval": {
-			"type": "number",
+			"type": "number",				
+			"xs": 12,
+			"sm": 12,
+			"md": 6,
+			"lg": 4,
+			"xl": 4,
 			"label": {
 				"en": "Polling Interval (seconds)",
 				"de": "Abfrageintervall (Sekunden)",
@@ -67,6 +80,11 @@
 		},
 		"pollingTimeout": {
 			"type": "number",
+			"xs": 12,
+			"sm": 12,
+			"md": 6,
+			"lg": 4,
+			"xl": 4,
 			"label": {
 				"en": "Request-Timeout (ms)",
 				"de": "Request-Timeout (ms)",
@@ -99,6 +117,11 @@
 		},
 		"retries": {
 			"type": "number",
+			"xs": 12,
+			"sm": 12,
+			"md": 6,
+			"lg": 4,
+			"xl": 4,
 			"label": {
 				"en": "Polling Retries",
 				"de": "Wiederholungsversuche",
@@ -130,6 +153,11 @@
 		},
 		"retrymultiplier": {
 			"type": "number",
+			"xs": 12,
+			"sm": 12,
+			"md": 6,
+			"lg": 4,
+			"xl": 4,
 			"label": {
 				"en": "Polling Retry Factor",
 				"de": "Polling-Wiederholungsfaktor",

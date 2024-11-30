@@ -68,13 +68,16 @@
 			"vehicle",
 			"energy"
 		],
-		"license": "MIT",
+		"licenseInformation": {
+			"license": "MIT",
+			"type": "free"
+		},
 		"platform": "Javascript/Node.js",
-		"main": "main.js",
 		"icon": "tesla-wallconnector3.png",
+		"tier": 2,
 		"enabled": false,
-		"extIcon": "https://raw.githubusercontent.com/nobl/ioBroker.tesla-wallconnector3/master/admin/tesla-wallconnector3.png",
-		"readme": "https://github.com/nobl/ioBroker.tesla-wallconnector3/blob/master/README.md",
+		"extIcon": "https://raw.githubusercontent.com/nobl/ioBroker.tesla-wallconnector3/main/admin/tesla-wallconnector3.png",
+		"readme": "https://github.com/nobl/ioBroker.tesla-wallconnector3/blob/main/README.md",
 		"loglevel": "info",
 		"mode": "daemon",
 		"type": "vehicle",
@@ -86,7 +89,7 @@
 		},
 		"dependencies": [
 			{
-				"js-controller": ">=4.0.0"
+				"js-controller": ">=5.0.19"
 			}
 		],
 		"globalDependencies": [

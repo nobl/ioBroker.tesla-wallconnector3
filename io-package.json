@@ -1,8 +1,21 @@
 {
 	"common": {
 		"name": "tesla-wallconnector3",
-		"version": "1.0.4",
+		"version": "1.0.5",
 		"news": {
+			"1.0.5": {
+			  "en": "Maintenance update (dependencies, ...)",
+			  "de": "Wartungsupdate (Abhängigkeiten, ..",
+			  "ru": "Обновление (в зависимости от обстоятельств, ..",
+			  "pt": "Atualização de manutenção (dependências, ..",
+			  "nl": "Onderhoudsupdate (afhankelijkheden, ...)",
+			  "fr": "Mise à jour de maintenance (dépendances, ...)",
+			  "it": "Aggiornamento di manutenzione (dipendenze, ..",
+			  "es": "Actualización de mantenimiento (dependencias, ...)",
+			  "pl": "Aktualizacja utrzymania (zależności,...)",
+			  "uk": "Оновлення технічного обслуговування (в залежності, ...)",
+			  "zh-cn": "更新维护(独立性, . ) )"
+			},
 			"1.0.4": {
 			  "en": "Maintenance update (dependencies, ...)",
 			  "de": "Wartungsupdate (Abhängigkeiten, ..",

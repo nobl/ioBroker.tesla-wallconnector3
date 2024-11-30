@@ -1,6 +1,6 @@
 {
   "name": "iobroker.tesla-wallconnector3",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "This adapter reads API information from a Tesla Wall Connector Gen 3",
   "author": {
     "name": "NoBl",

@@ -1,9 +1,6 @@
 {
 	"i18n": false,
 	"type": "panel",
-	"tabsStyle": {
-		width: "calc(100% - 100px)"
-	},
 	"items": {
 		"teslawb3ip": {
 			"type": "text",

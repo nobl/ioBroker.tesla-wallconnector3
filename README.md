@@ -411,6 +411,9 @@ Please be aware that most (if not all) descriptions might be way off and might r
 
 ## Changelog
 
+### 0.1.4 (NoBl)
+* Maintenance update (dependencies, ...)
+
 ### 0.1.3 (NoBl)
 * Improvements
 

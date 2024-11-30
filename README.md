@@ -411,7 +411,7 @@ Please be aware that most (if not all) descriptions might be way off and might r
 
 ## Changelog
 
-### 1.0.5 (NoBl)
+### 1.0.6 (NoBl)
 * Maintenance update (dependencies, ...)
 
 

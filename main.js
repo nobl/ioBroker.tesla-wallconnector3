@@ -77,7 +77,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 			this.log.warn(
 				"(checkConf) Config timeout " +
 					this.config.pollingTimeout +
-					" not [1000..10000] ms. Using default: 5000"
+					" not [1000..10000] ms. Using default: 5000",
 			);
 			this.config.pollingTimeout = 5000;
 		}
@@ -94,7 +94,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 			this.log.warn(
 				"(checkConf) Config retry multiplier " +
 					this.config.retrymultiplier +
-					" not [1..10] seconds. Using default: 2"
+					" not [1..10] seconds. Using default: 2",
 			);
 			this.config.retrymultiplier = 2;
 		}
@@ -132,7 +132,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 					this.config.teslawb3ip +
 					"). Exiting! (" +
 					error +
-					")"
+					")",
 			);
 		}
 	}
@@ -160,7 +160,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 							"(Poll) received error " +
 								error.response.status +
 								" response from Tesla Wall Connector Gen 3 with content: " +
-								JSON.stringify(error.response.data)
+								JSON.stringify(error.response.data),
 						);
 						reject(error.response.status);
 					} else if (error.request) {
@@ -200,7 +200,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 						retry +
 						" times. Giving up now. Check config and restart adapter. (" +
 						error +
-						")"
+						")",
 				);
 				this.setState("info.connection", false, true);
 			} else {
@@ -216,11 +216,11 @@ class TeslaWallconnector3 extends utils.Adapter {
 						this.config.interval * this.config.retrymultiplier * retry +
 						" seconds! (" +
 						error +
-						")"
+						")",
 				);
 				this.timer = setTimeout(
 					() => this.readTeslaWC3(),
-					this.config.interval * this.config.retrymultiplier * retry * 1000
+					this.config.interval * this.config.retrymultiplier * retry * 1000,
 				);
 			}
 		}
@@ -268,7 +268,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 					obj.common.name,
 					obj.common.type,
 					obj.common.unit,
-					obj.common.write
+					obj.common.write,
 				);
 			}
 		}
@@ -278,27 +278,27 @@ class TeslaWallconnector3 extends utils.Adapter {
 		// Check object for changes
 		if (cacheObj.description != description) {
 			this.log.debug(
-				"(doState) Updating object: " + name + " (desc): " + cacheObj.description + " -> " + description
+				"(doState) Updating object: " + name + " (desc): " + cacheObj.description + " -> " + description,
 			);
-			await this.extendObject(name, {common: { name: description } });
+			await this.extendObject(name, { common: { name: description } });
 			cacheObj.description = description;
 			this.cachePutObj(name, cacheObj);
 		}
 		if (cacheObj.type != valueType) {
 			this.log.debug("(doState) Updating object: " + name + " (type): " + cacheObj.type + " -> " + valueType);
-			await this.extendObject(name, {common: { type: valueType } });
+			await this.extendObject(name, { common: { type: valueType } });
 			cacheObj.type = valueType;
 			this.cachePutObj(name, cacheObj);
 		}
 		if (cacheObj.unit != unit) {
 			this.log.debug("(doState) Updating object: " + name + " (unit): " + cacheObj.unit + " -> " + unit);
-			await this.extendObject(name, {common: { unit: unit } });
+			await this.extendObject(name, { common: { unit: unit } });
 			cacheObj.unit = unit;
 			this.cachePutObj(name, cacheObj);
 		}
 		if (cacheObj.write != write) {
 			this.log.debug("(doState) Updating object: " + name + " (write): " + cacheObj.write + " -> " + write);
-			await this.extendObject(name, {common: { write: write } });
+			await this.extendObject(name, { common: { write: write } });
 			cacheObj.write = write;
 			this.cachePutObj(name, cacheObj);
 		}
@@ -347,7 +347,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	 */
 	async evalPoll(obj, key1) {
 		if (unloaded) return;
-		for (const[key2, value2] of Object.entries(obj)) {
+		for (const[ key2, value2 ] of Object.entries(obj)) {
 			if (value2 !== "VARIABLE_NOT_FOUND" && key2 !== "OBJECT_NOT_FOUND") {
 				const key = key1 + "." + key2;
 				if (state_attr[key] === undefined) {

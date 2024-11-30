@@ -67,8 +67,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 		this.log.debug("(checkConf) Configured polling interval high priority: " + this.config.interval);
 		if (this.config.interval < 1 || this.config.interval > 3600) {
 			this.log.warn(
-				"(checkConf) Config interval " +
-				this.config.interval + " not [1..3600] seconds. Using default: 10",
+				"(checkConf) Config interval " + this.config.interval + " not [1..3600] seconds. Using default: 10",
 			);
 			this.config.interval = 10;
 		}
@@ -84,8 +83,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 		this.log.debug("(checkConf) Configured num of retries: " + this.config.retries);
 		if (this.config.retries < 0 || this.config.retries > 999) {
 			this.log.warn(
-				"(checkConf) Config num of retries " +
-				this.config.retries + " not [0..999] seconds. Using default: 10"
+				"(checkConf) Config num of retries " + this.config.retries + " not [0..999] seconds. Using default: 10",
 			);
 			this.config.retries = 10;
 		}
@@ -347,7 +345,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	 */
 	async evalPoll(obj, key1) {
 		if (unloaded) return;
-		for (const[ key2, value2 ] of Object.entries(obj)) {
+		for (const [key2, value2] of Object.entries(obj)) {
 			if (value2 !== "VARIABLE_NOT_FOUND" && key2 !== "OBJECT_NOT_FOUND") {
 				const key = key1 + "." + key2;
 				if (state_attr[key] === undefined) {

@@ -68,7 +68,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 		if (this.config.interval < 1 || this.config.interval > 3600) {
 			this.log.warn(
 				"(checkConf) Config interval " +
-					this.config.interval + " not [1..3600] seconds. Using default: 10"
+				this.config.interval + " not [1..3600] seconds. Using default: 10",
 			);
 			this.config.interval = 10;
 		}
@@ -76,7 +76,8 @@ class TeslaWallconnector3 extends utils.Adapter {
 		if (this.config.pollingTimeout < 1000 || this.config.pollingTimeout > 10000) {
 			this.log.warn(
 				"(checkConf) Config timeout " +
-					this.config.pollingTimeout + " not [1000..10000] ms. Using default: 5000"
+					this.config.pollingTimeout +
+					" not [1000..10000] ms. Using default: 5000"
 			);
 			this.config.pollingTimeout = 5000;
 		}
@@ -84,8 +85,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 		if (this.config.retries < 0 || this.config.retries > 999) {
 			this.log.warn(
 				"(checkConf) Config num of retries " +
-				this.config.retries + 
-				" not [0..999] seconds. Using default: 10"
+				this.config.retries + " not [0..999] seconds. Using default: 10"
 			);
 			this.config.retries = 10;
 		}
@@ -158,9 +158,9 @@ class TeslaWallconnector3 extends utils.Adapter {
 						// The request was made and the server responded with a status code
 						caller.log.warn(
 							"(Poll) received error " +
-							error.response.status +
-							" response from Tesla Wall Connector Gen 3 with content: " +
-							JSON.stringify(error.response.data)
+								error.response.status +
+								" response from Tesla Wall Connector Gen 3 with content: " +
+								JSON.stringify(error.response.data)
 						);
 						reject(error.response.status);
 					} else if (error.request) {
@@ -388,7 +388,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 
 	cachePut(key, value, description, type, unit, write) {
 		this.log.debug(
-			"Cache put: " + key + "[" + value + ", " + description + ", " + type + ", " + unit + ", " + write + "]"
+			"Cache put: " + key + "[" + value + ", " + description + ", " + type + ", " + unit + ", " + write + "]",
 		);
 		cache[key] = {
 			value: value,

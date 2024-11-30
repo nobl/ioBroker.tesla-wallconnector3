@@ -67,25 +67,23 @@ class TeslaWallconnector3 extends utils.Adapter {
 		this.log.debug("(checkConf) Configured polling interval high priority: " + this.config.interval);
 		if (this.config.interval < 1 || this.config.interval > 3600) {
 			this.log.warn(
-				"(checkConf) Config interval " + 
-				this.config.interval + 
-				" not [1..3600] seconds. Using default: 10"
+				"(checkConf) Config interval " +
+					this.config.interval + " not [1..3600] seconds. Using default: 10"
 			);
 			this.config.interval = 10;
 		}
 		this.log.debug("(checkConf) Configured polling timeout: " + this.config.pollingTimeout);
 		if (this.config.pollingTimeout < 1000 || this.config.pollingTimeout > 10000) {
 			this.log.warn(
-				"(checkConf) Config timeout " + 
-				this.config.pollingTimeout + 
-				" not [1000..10000] ms. Using default: 5000"
+				"(checkConf) Config timeout " +
+					this.config.pollingTimeout + " not [1000..10000] ms. Using default: 5000"
 			);
 			this.config.pollingTimeout = 5000;
 		}
 		this.log.debug("(checkConf) Configured num of retries: " + this.config.retries);
 		if (this.config.retries < 0 || this.config.retries > 999) {
 			this.log.warn(
-				"(checkConf) Config num of retries " + 
+				"(checkConf) Config num of retries " +
 				this.config.retries + 
 				" not [0..999] seconds. Using default: 10"
 			);
@@ -94,9 +92,9 @@ class TeslaWallconnector3 extends utils.Adapter {
 		this.log.debug("(checkConf) Configured retry multiplier: " + this.config.retrymultiplier);
 		if (this.config.retrymultiplier < 1 || this.config.retrymultiplier > 10) {
 			this.log.warn(
-				"(checkConf) Config retry multiplier " + 
-				this.config.retrymultiplier + 
-				" not [1..10] seconds. Using default: 2"
+				"(checkConf) Config retry multiplier " +
+					this.config.retrymultiplier +
+					" not [1..10] seconds. Using default: 2"
 			);
 			this.config.retrymultiplier = 2;
 		}
@@ -130,11 +128,11 @@ class TeslaWallconnector3 extends utils.Adapter {
 			this.setState("info.connection", true, true);
 		} catch (error) {
 			throw new Error(
-				"Error connecting to Tesla Wall Connector Gen 3 (IP: " + 
-				this.config.teslawb3ip + 
-				"). Exiting! (" + 
-				error + 
-				")"
+				"Error connecting to Tesla Wall Connector Gen 3 (IP: " +
+					this.config.teslawb3ip +
+					"). Exiting! (" +
+					error +
+					")"
 			);
 		}
 	}
@@ -158,7 +156,12 @@ class TeslaWallconnector3 extends utils.Adapter {
 				.catch((error) => {
 					if (error.response) {
 						// The request was made and the server responded with a status code
-						caller.log.warn("(Poll) received error " + error.response.status + " response from Tesla Wall Connector Gen 3 with content: " + JSON.stringify(error.response.data));
+						caller.log.warn(
+							"(Poll) received error " +
+							error.response.status +
+							" response from Tesla Wall Connector Gen 3 with content: " +
+							JSON.stringify(error.response.data)
+						);
 						reject(error.response.status);
 					} else if (error.request) {
 						// The request was made but no response was received
@@ -191,29 +194,29 @@ class TeslaWallconnector3 extends utils.Adapter {
 		} catch (error) {
 			if (retry == this.config.retries && this.config.retries < 999) {
 				this.log.error(
-					"Error reading from Tesla Wall Connector Gen 3 (" + 
-					this.config.teslawb3ip + 
-					"). Retried " + 
-					retry + 
-					" times. Giving up now. Check config and restart adapter. (" + 
-					error + 
-					")"
+					"Error reading from Tesla Wall Connector Gen 3 (" +
+						this.config.teslawb3ip +
+						"). Retried " +
+						retry +
+						" times. Giving up now. Check config and restart adapter. (" +
+						error +
+						")"
 				);
 				this.setState("info.connection", false, true);
 			} else {
 				retry += 1;
 				this.log.warn(
 					"Error reading from Tesla Wall Connector Gen 3 (" +
-					this.config.teslawb3ip +
-					"). Retry " + 
-					retry + 
-					"/" + 
-					this.config.retries + 
-					" in " + 
-					this.config.interval * this.config.retrymultiplier * retry + 
-					" seconds! (" + 
-					error + 
-					")"
+						this.config.teslawb3ip +
+						"). Retry " +
+						retry +
+						"/" +
+						this.config.retries +
+						" in " +
+						this.config.interval * this.config.retrymultiplier * retry +
+						" seconds! (" +
+						error +
+						")"
 				);
 				this.timer = setTimeout(
 					() => this.readTeslaWC3(),
@@ -236,7 +239,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 
 		const valueType = value !== null && value !== undefined ? typeof value : "mixed";
 
-		if (!await this.cacheCheck(name)) {
+		if (!(await this.cacheCheck(name))) {
 			// check if object in cache
 			// Object not in cache - try to read from DB
 			const obj = await this.getObjectAsync(name);
@@ -277,25 +280,25 @@ class TeslaWallconnector3 extends utils.Adapter {
 			this.log.debug(
 				"(doState) Updating object: " + name + " (desc): " + cacheObj.description + " -> " + description
 			);
-			await this.extendObject(name, {common: { name: description }});
+			await this.extendObject(name, {common: { name: description } });
 			cacheObj.description = description;
 			this.cachePutObj(name, cacheObj);
 		}
 		if (cacheObj.type != valueType) {
 			this.log.debug("(doState) Updating object: " + name + " (type): " + cacheObj.type + " -> " + valueType);
-			await this.extendObject(name, {common: { type: valueType }});
+			await this.extendObject(name, {common: { type: valueType } });
 			cacheObj.type = valueType;
 			this.cachePutObj(name, cacheObj);
 		}
 		if (cacheObj.unit != unit) {
 			this.log.debug("(doState) Updating object: " + name + " (unit): " + cacheObj.unit + " -> " + unit);
-			await this.extendObject(name, {common: { unit: unit }});
+			await this.extendObject(name, {common: { unit: unit } });
 			cacheObj.unit = unit;
 			this.cachePutObj(name, cacheObj);
 		}
 		if (cacheObj.write != write) {
 			this.log.debug("(doState) Updating object: " + name + " (write): " + cacheObj.write + " -> " + write);
-			await this.extendObject(name, {common: { write: write }});
+			await this.extendObject(name, {common: { write: write } });
 			cacheObj.write = write;
 			this.cachePutObj(name, cacheObj);
 		}
@@ -326,9 +329,9 @@ class TeslaWallconnector3 extends utils.Adapter {
 				this.log.silly("(Decode) Trans found for: " + key + "." + lang);
 				const trans =
 					state_trans[key + "." + lang] !== undefined
-						? (state_trans[key + "." + lang][value] !== undefined
+						? state_trans[key + "." + lang][value] !== undefined
 							? state_trans[key + "." + lang][value]
-							: "(unknown)")
+							: "(unknown)"
 						: "(unknown)";
 				this.log.silly("(Decode) Trans " + key + ":" + value + " = " + trans);
 				const desc = state_attr[key + "_Text"] !== undefined ? state_attr[key + "_Text"].name : key;

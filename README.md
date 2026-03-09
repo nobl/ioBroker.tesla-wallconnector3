@@ -411,6 +411,9 @@ Please be aware that most (if not all) descriptions might be way off and might r
 
 ## Changelog
 
+### **WORK IN PROGRESS**
+- (iobroker-bot) Adapter requires node.js >= 20 now.
+
 ### 1.0.6 (NoBl)
 * Maintenance update (dependencies, ...)
 

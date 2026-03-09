@@ -19,7 +19,7 @@
     "url": "https://github.com/nobl/ioBroker.tesla-wallconnector3.git"
   },
   "engines": {
-    "node": ">= 18"
+    "node": ">= 20"
   },
   "dependencies": {
 	"axios": "^1.7.9",

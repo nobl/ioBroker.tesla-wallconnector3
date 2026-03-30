@@ -76,12 +76,12 @@
 		},
 		"dependencies": [
 			{
-				"js-controller": ">=7.6.20"
+				"js-controller": ">=6.0.11"
 			}
 		],
 		"globalDependencies": [
 			{
-				"admin": ">=7.6.17"
+				"admin": ">=7.6.20"
 			}
 		]
 	},

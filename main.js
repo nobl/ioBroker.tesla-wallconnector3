@@ -4,6 +4,7 @@ const utils = require("@iobroker/adapter-core");
 const axios = require("axios");
 const state_attr = require(`${__dirname}/lib/state_attr.js`);
 const state_trans = require(`${__dirname}/lib/state_trans.js`);
+
 const POLL_ENDPOINTS = ["version", "lifetime", "wifi_status", "vitals"];
 
 class TeslaWallconnector3 extends utils.Adapter {

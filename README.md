@@ -398,8 +398,19 @@ Please be aware that most (if not all) descriptions might be way off and might r
     |string|R|
 
    *SSID the Tesla Wall Connector Gen 3 is connected to.*
-   
 
+## Donate
+Maintenance of this adapter can be quite time consuming. If you wish to thank the author, please use these links:
+[![WERO](https://img.shields.io/badge/WERO-8A2BE2)](https://share.weropay.eu/p/1/c/QzzqgSQcI3)
+[![PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://www.paypal.me/gerbots)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/norblu)
+[![GitHub Sponsor](https://img.shields.io/badge/Sponsor-GitHub-181717?logo=github&logoColor=white)](https://github.com/sponsors/nobl)
+   
+<!--
+  Placeholder for the next version (at the beginning of the line):
+  ### **WORK IN PROGRESS**
+-->
+### **WORK IN PROGRESS**
 
 ## Changelog
 ### 1.1.0 (2026-03-30)

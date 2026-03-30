@@ -411,6 +411,9 @@ Please be aware that most (if not all) descriptions might be way off and might r
 
 ## Changelog
 
+### **WORK IN PROGRESS**
+- (iobroker-bot) Adapter requires node.js >= 20 now.
+
 ### 1.0.6 (NoBl)
 * Maintenance update (dependencies, ...)
 
@@ -418,7 +421,7 @@ Please be aware that most (if not all) descriptions might be way off and might r
 ## License
 MIT License
 
-Copyright (c) 2024 Norbert Bluemle <github@bluemle.org>
+Copyright (c) 2024-2026 Norbert Bluemle <github@bluemle.org>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

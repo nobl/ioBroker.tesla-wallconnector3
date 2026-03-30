@@ -405,6 +405,7 @@ Please be aware that most (if not all) descriptions might be way off and might r
 
 ### **WORK IN PROGRESS**
 - (iobroker-bot) Adapter requires node.js >= 20 now.
+- Added state attributes (and moved notifications to debug from info)
 
 ### 1.0.6 (NoBl)
 * Maintenance update (dependencies, ...)

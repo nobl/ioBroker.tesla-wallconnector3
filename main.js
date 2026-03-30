@@ -351,7 +351,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 			if (value2 !== "VARIABLE_NOT_FOUND" && key2 !== "OBJECT_NOT_FOUND") {
 				const key = `${key1}.${key2}`;
 				if (state_attr[key] === undefined) {
-					this.log.info(`REPORT_TO_DEV: State attribute definition missing for: ${key}, Val: ${value2}`);
+					this.log.debug(`REPORT_TO_DEV: State attribute definition missing for: ${key}, Val: ${value2}`);
 				}
 				const desc = state_attr[key] !== undefined ? state_attr[key].name : key2;
 				const unit = state_attr[key] !== undefined ? state_attr[key].unit : "";

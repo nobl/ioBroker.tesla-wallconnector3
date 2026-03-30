@@ -1,0 +1,12 @@
+{
+    "interval": "Intervalo de sondeo (segundos)",
+    "interval_help": "Aquí ingresa el intervalo de sondeo en segundos. El adaptador sondeará el Tesla Wall Connector Gen 3 en este intervalo. Predeterminado = 10 segundos. Mínimo = 1 segundo. Máximo = 3600 segundos.",
+    "ip": "IP/FQDN del conector de pared Tesla Gen 3",
+    "ip_help": "Aquí ingresas la IP o FQDN de tu Tesla Wall Connector Gen 3",
+    "pollingTimeout": "Tiempo de espera de solicitud (ms)",
+    "pollingTimeout_help": "Aquí se define el tiempo de espera de la solicitud al sondear desde Tesla Wall Connector Gen 3 [mínimo 1000, máximo 100000]. Predeterminado = 5000.",
+    "retries": "Reintentos de sondeo",
+    "retries_help": "Aquí ingresa la frecuencia con la que desea que el adaptador reintente el sondeo en caso de error [mínimo 0, máximo 999]. 0 = nunca, 999 = ilimitado. Predeterminado = 10.",
+    "retrymultiplier": "Factor de reintento de sondeo",
+    "retrymultiplier_help": "Aquí ingresa cómo desea espaciar los reintentos entre sí. El enésimo reintento se producirá después del Intervalo * Multiplicador * n segundos. [mínimo 1, máximo 10]. Predeterminado = 2."
+}

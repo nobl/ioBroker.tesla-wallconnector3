@@ -1,0 +1,12 @@
+{
+    "interval": "Intervalle d'interrogation (secondes)",
+    "interval_help": "Ici, vous entrez l'intervalle d'interrogation en secondes. L'adaptateur interrogera le Tesla Wall Connector Gen 3 à cet intervalle. Par défaut = 10 secondes. Minimum = 1 seconde. Maximum = 3 600 secondes.",
+    "ip": "IP/FQDN du connecteur mural Tesla Gen 3",
+    "ip_help": "Ici, vous entrez l'IP ou le FQDN de votre Tesla Wall Connector Gen 3",
+    "pollingTimeout": "Délai d'expiration de la demande (ms)",
+    "pollingTimeout_help": "Ici, vous définissez le délai d'expiration de la demande lors de l'interrogation depuis Tesla Wall Connector Gen 3 [min 1000, max 100000]. Par défaut = 5 000.",
+    "retries": "Nouvelles tentatives d'interrogation",
+    "retries_help": "Ici, vous entrez la fréquence à laquelle vous souhaitez que l'adaptateur réessaye d'interroger en cas d'erreur [min 0, max 999]. 0 = jamais, 999 = illimité. Par défaut = 10.",
+    "retrymultiplier": "Facteur de nouvelle tentative d'interrogation",
+    "retrymultiplier_help": "Ici, vous indiquez comment vous souhaitez espacer les tentatives les unes des autres. La nième tentative aura lieu après Intervalle * Multiplicateur * n secondes. [min 1, max 10]. Par défaut = 2."
+}

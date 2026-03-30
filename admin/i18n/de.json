@@ -1,0 +1,12 @@
+{
+    "interval": "Abfrageintervall (Sekunden)",
+    "interval_help": "Hier geben Sie das Abfrageintervall in Sekunden ein. In diesem Intervall fragt der Adapter den Tesla Wall Connector Gen 3 ab. Standard = 10 Sekunden. Minimum = 1 Sekunde. Maximum = 3600 Sekunden.",
+    "ip": "IP/FQDN des Tesla Wall Connector Gen 3",
+    "ip_help": "Hier geben Sie die IP oder den FQDN Ihres Tesla Wall Connector Gen 3 ein",
+    "pollingTimeout": "Anfrage-Timeout (ms)",
+    "pollingTimeout_help": "Hier definieren Sie das Anforderungszeitlimit beim Abfragen vom Tesla Wall Connector Gen 3 [min. 1000, max. 100000]. Standard = 5000.",
+    "retries": "Abfragewiederholungen",
+    "retries_help": "Hier geben Sie ein, wie oft der Adapter die Abfrage im Fehlerfall wiederholen soll [min. 0, max. 999]. 0 = nie, 999 = unbegrenzt. Standard = 10.",
+    "retrymultiplier": "Polling-Wiederholungsfaktor",
+    "retrymultiplier_help": "Hier geben Sie an, wie weit die Wiederholungsversuche voneinander entfernt sein sollen. Der n-te Wiederholungsversuch erfolgt nach Intervall * Multiplikator * n Sekunden. [min. 1, max. 10]. Standard = 2."
+}

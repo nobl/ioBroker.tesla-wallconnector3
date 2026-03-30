@@ -1,0 +1,12 @@
+{
+    "interval": "Intervalo de pesquisa (segundos)",
+    "interval_help": "Aqui você insere o intervalo de pesquisa em segundos. The adapter will poll the Tesla Wall Connector Gen 3 at this interval. Padrão = 10 segundos. Mínimo = 1 segundo. Máximo = 3600 segundos.",
+    "ip": "IP/FQDN do Tesla Wall Connector Gen 3",
+    "ip_help": "Aqui você insere o IP ou FQDN do seu Tesla Wall Connector Gen 3",
+    "pollingTimeout": "Tempo limite de solicitação (ms)",
+    "pollingTimeout_help": "Aqui você define o tempo limite da solicitação ao fazer a sondagem do Tesla Wall Connector Gen 3 [mín. 1.000, máximo 100.000]. Padrão = 5000.",
+    "retries": "Novas tentativas de pesquisa",
+    "retries_help": "Aqui você insere a frequência com que deseja que o adaptador tente novamente a pesquisa em caso de erro [min 0, max 999]. 0 = nunca, 999 = ilimitado. Default = 10.",
+    "retrymultiplier": "Fator de nova tentativa de pesquisa",
+    "retrymultiplier_help": "Aqui você insere como deseja espaçar as tentativas umas das outras. A enésima tentativa acontecerá após Intervalo * Multiplicador * n segundos. [mínimo 1, máximo 10]. Padrão = 2."
+}

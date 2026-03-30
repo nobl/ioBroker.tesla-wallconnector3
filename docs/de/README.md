@@ -5,10 +5,6 @@
 Ausgerichtet auf den Tesla Wall Connector Gen 3.
 Bietet nur Lesezugriff auf API-Daten (Schreiben wird von der API nicht unterstützt).
 
-### Installation
-Eine Instanz des Adapters wird über die ioBroker Admin-Oberfläche installiert. 
-Nach Abschluss der Installation einer Adapterinstanz öffnet sich automatisch ein Konfigurationsfenster.
-
 ## Konfiguration
 
 ### Fenster "Haupteinstellungen"

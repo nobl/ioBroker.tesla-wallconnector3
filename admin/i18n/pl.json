@@ -1,0 +1,12 @@
+{
+    "interval": "Interwał odpytywania (sekundy)",
+    "interval_help": "Tutaj wprowadzasz interwał odpytywania w sekundach. W tym przedziale czasu adapter będzie odpytywać złącze ścienne Tesla Wall Connector Gen 3. Wartość domyślna = 10 sekund. Minimum = 1 sekunda. Maksymalnie = 3600 sekund.",
+    "ip": "IP / FQDN złącza ściennego Tesli Gen 3",
+    "ip_help": "Tutaj wprowadzasz adres IP lub FQDN swojego złącza ściennego Tesla Gen 3",
+    "pollingTimeout": "Limit czasu żądania (ms)",
+    "pollingTimeout_help": "Tutaj definiujesz limit czasu żądania podczas odpytywania ze złącza Tesla Wall Connector Gen 3 [min. 1000, maks. 100000]. Wartość domyślna = 5000.",
+    "retries": "Ponowne próby odpytywania",
+    "retries_help": "Tutaj możesz wprowadzić, jak często adapter ma ponawiać próby odpytywania w przypadku błędu [min. 0, maks. 999]. 0 = nigdy, 999 = bez ograniczeń. Wartość domyślna = 10.",
+    "retrymultiplier": "Współczynnik ponownych prób odpytywania",
+    "retrymultiplier_help": "Tutaj możesz wprowadzić sposób rozdzielania ponownych prób. n-ta ponowna próba nastąpi po Interwał * Mnożnik * n sekund. [min. 1, maks. 10]. Wartość domyślna = 2."
+}

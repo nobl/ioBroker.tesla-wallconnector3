@@ -1,0 +1,12 @@
+{
+    "interval": "Intervallo di polling (secondi)",
+    "interval_help": "Qui si inserisce l'intervallo di polling in secondi. L'adattatore eseguirà il polling del Tesla Wall Connector Gen 3 a questo intervallo. Impostazione predefinita = 10 secondi. Minimo = 1 secondo. Massimo = 3600 secondi.",
+    "ip": "IP/FQDN di Tesla Wall Connector Gen 3",
+    "ip_help": "Qui inserisci l'IP o il FQDN del tuo Tesla Wall Connector Gen 3",
+    "pollingTimeout": "Timeout richiesta (ms)",
+    "pollingTimeout_help": "Qui si definisce il timeout della richiesta durante il polling da Tesla Wall Connector Gen 3 [min 1000, max 100000]. Default = 5000.",
+    "retries": "Nuovi tentativi di sondaggio",
+    "retries_help": "Qui si inserisce la frequenza con cui si desidera che l'adattatore ritenti il ​​polling in caso di errore [min 0, max 999]. 0 = mai, 999 = illimitato. Predefinito = 10.",
+    "retrymultiplier": "Fattore di tentativi di polling",
+    "retrymultiplier_help": "Qui inserisci come vuoi distanziare i tentativi l'uno dall'altro. L'ennesimo tentativo avverrà dopo Intervallo * Moltiplicatore * n secondi. [minimo 1, massimo 10]. Default = 2."
+}

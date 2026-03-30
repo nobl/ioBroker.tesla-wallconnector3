@@ -5,9 +5,6 @@
 Targeted at the Tesla Wall Connector Gen 3.
 Only provides read access to API data (write isn't supported by the API).
 
-## Installation
-Installation is facilitated via the ioBroker web interface and the configuration will auto-open once installation is completed.
-
 ## Setup
 In addition to the adapter installation you have to add an instance of the adapter.
 

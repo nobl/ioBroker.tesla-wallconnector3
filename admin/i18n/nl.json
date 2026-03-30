@@ -1,0 +1,12 @@
+{
+    "interval": "Polling-interval (seconden)",
+    "interval_help": "Hier voert u het polling-interval in seconden in. De adapter zal tijdens dit interval de Tesla Wall Connector Gen 3 ondervragen. Standaard = 10 seconden. Minimaal = 1 seconde. Maximaal = 3600 seconden.",
+    "ip": "IP/FQDN van Tesla Wall Connector Gen 3",
+    "ip_help": "Hier vult u de IP of FQDN in van uw Tesla Wall Connector Gen 3",
+    "pollingTimeout": "Verzoek-time-out (ms)",
+    "pollingTimeout_help": "Hier definieert u de time-out van het verzoek bij het pollen van Tesla Wall Connector Gen 3 [min. 1000, max. 100.000]. Standaard = 5000.",
+    "retries": "Nieuwe pogingen tot peiling",
+    "retries_help": "Hier geeft u op hoe vaak u wilt dat de adapter opnieuw probeert te pollen in geval van een fout [min 0, max 999]. 0 = nooit, 999 = onbeperkt. Default = 10.",
+    "retrymultiplier": "Factor voor nieuwe pogingen",
+    "retrymultiplier_help": "Hier geeft u aan hoe u de nieuwe pogingen uit elkaar wilt plaatsen. De volgende poging zal plaatsvinden na Interval * Multiplier * n seconden. [min. 1, max. 10]. Standaard = 2."
+}

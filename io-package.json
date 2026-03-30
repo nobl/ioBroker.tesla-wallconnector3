@@ -4,23 +4,23 @@
 		"version": "1.0.6",
 		"news": {
 			"1.0.6": {
-			  "en": "Maintenance update (dependencies, ...)",
-			  "de": "Wartungsupdate (Abhängigkeiten, ..",
-			  "ru": "Обновление (в зависимости от обстоятельств, ..",
-			  "pt": "Atualização de manutenção (dependências, ..",
-			  "nl": "Onderhoudsupdate (afhankelijkheden, ...)",
-			  "fr": "Mise à jour de maintenance (dépendances, ...)",
-			  "it": "Aggiornamento di manutenzione (dipendenze, ..",
-			  "es": "Actualización de mantenimiento (dependencias, ...)",
-			  "pl": "Aktualizacja utrzymania (zależności,...)",
-			  "uk": "Оновлення технічного обслуговування (в залежності, ...)",
-			  "zh-cn": "更新维护(独立性, . ) )"
+				"en": "Maintenance update (dependencies, ...)",
+				"de": "Wartungsupdate (Abhängigkeiten, ..",
+				"ru": "Обновление (в зависимости от обстоятельств, ..",
+				"pt": "Atualização de manutenção (dependências, ..",
+				"nl": "Onderhoudsupdate (afhankelijkheden, ...)",
+				"fr": "Mise à jour de maintenance (dépendances, ...)",
+				"it": "Aggiornamento di manutenzione (dipendenze, ..",
+				"es": "Actualización de mantenimiento (dependencias, ...)",
+				"pl": "Aktualizacja utrzymania (zależności,...)",
+				"uk": "Оновлення технічного обслуговування (в залежності, ...)",
+				"zh-cn": "更新维护(独立性, . ) )"
 			}
 		},
 		"docs": {
-            "en": "docs/en/README.md",
-            "de": "docs/de/README.md"
-        },
+			"en": "docs/en/README.md",
+			"de": "docs/de/README.md"
+		},
 		"titleLang": {
 			"en": "Tesla Wall Connector Gen 3",
 			"de": "Tesla Wandanschluss Gen 3",
@@ -87,31 +87,33 @@
 	},
 	"native": {
 		"teslawb3ip": "0.0.0.0",
-        "interval": 10,
+		"interval": 10,
 		"pollingTimeout": 5000,
 		"retries": 10,
 		"retrymultiplier": 2
 	},
 	"objects": [],
-	"instanceObjects": [{
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": "Information"
-            },
-            "native": {}
-        }, {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "Device or service connected",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        }
-    ]
+	"instanceObjects": [
+		{
+			"_id": "info",
+			"type": "channel",
+			"common": {
+				"name": "Information"
+			},
+			"native": {}
+		},
+		{
+			"_id": "info.connection",
+			"type": "state",
+			"common": {
+				"role": "indicator.connected",
+				"name": "Device or service connected",
+				"type": "boolean",
+				"read": true,
+				"write": false,
+				"def": false
+			},
+			"native": {}
+		}
+	]
 }

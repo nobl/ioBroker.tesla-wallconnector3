@@ -16,6 +16,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	 * @param {Partial<ioBroker.AdapterOptions>} [options] some options
 	 */
 	constructor(options) {
+		// @ts-expect-error Allow spreading user-supplied options into Adapter constructor despite type mismatch
 		super({
 			...options,
 			name: "tesla-wallconnector3",

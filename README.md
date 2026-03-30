@@ -402,8 +402,7 @@ Please be aware that most (if not all) descriptions might be way off and might r
 
 
 ## Changelog
-
-### **WORK IN PROGRESS**
+### 1.1.0 (2026-03-30)
 - (iobroker-bot) Adapter requires node.js >= 20 now.
 - Added state attributes (and moved notifications to debug from info)
 - Code optimization
@@ -411,7 +410,6 @@ Please be aware that most (if not all) descriptions might be way off and might r
 
 ### 1.0.6 (NoBl)
 * Maintenance update (dependencies, ...)
-
 
 ## License
 MIT License

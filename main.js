@@ -63,7 +63,8 @@ class TeslaWallconnector3 extends utils.Adapter {
 			this.setState("info.connection", false, true);
 			callback();
 		} catch (e) {
-			callback(e);
+			this.log.error(e);
+			callback();
 		}
 	}
 

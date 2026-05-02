@@ -413,6 +413,9 @@ Maintenance of this adapter can be quite time consuming. If you wish to thank th
 ### **WORK IN PROGRESS**
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (copilot) Adapter requires node.js >= 22 now
+
 ### 1.1.0 (2026-03-30)
 - (iobroker-bot) Adapter requires node.js >= 20 now.
 - Added state attributes (and moved notifications to debug from info)

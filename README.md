@@ -425,6 +425,8 @@ Maintenance of this adapter can be quite time consuming. If you wish to thank th
 ### 1.0.6 (NoBl)
 * Maintenance update (dependencies, ...)
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## License
 MIT License
 

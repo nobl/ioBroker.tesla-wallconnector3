@@ -385,6 +385,23 @@ class TeslaWallconnector3 extends utils.Adapter {
 				await this.doState(key, valueTyping(key, value2), desc, unit, false);
 			}
 		}
+
+		if (key1 === "vitals") {
+			await this.calcPower(obj);
+		}
+	}
+
+	/**
+	 * Calculates current charging power from per-phase voltage and current.
+	 *
+	 * @param {{ [s: string]: any }} obj - the vitals response object
+	 */
+	async calcPower(obj) {
+		const power =
+			(Number(obj.voltageA_v) || 0) * (Number(obj.currentA_a) || 0) +
+			(Number(obj.voltageB_v) || 0) * (Number(obj.currentB_a) || 0) +
+			(Number(obj.voltageC_v) || 0) * (Number(obj.currentC_a) || 0);
+		await this.doState("vitals.power_w", parseFloat(power.toFixed(1)), "Charging Power (calculated)", "W", false);
 	}
 }
 

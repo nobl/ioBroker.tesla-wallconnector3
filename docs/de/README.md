@@ -38,6 +38,7 @@ Live-Betriebsdaten des Wall Connectors. Die wichtigsten Datenpunkte:
 | vehicle_connected | boolean | Ob ein Fahrzeug angeschlossen ist |
 | vehicle_current_a | number | Vom Fahrzeug gezogener Strom (A) |
 | session_energy_wh | number | In der aktuellen Sitzung gelieferte Energie (Wh) |
+| power_w | number | Ladeleistung (berechnet aus V × A pro Phase) (W) |
 | session_s | number | Dauer der aktuellen Ladesitzung (s) |
 | contactor_closed | boolean | Ob das Laderelais geschlossen ist |
 | grid_v | number | Netzspannung (V) |

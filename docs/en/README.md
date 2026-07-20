@@ -38,6 +38,7 @@ Live operational data from the wall connector. Key states include:
 | vehicle_connected | boolean | Whether a vehicle is plugged in |
 | vehicle_current_a | number | Current drawn by the vehicle (A) |
 | session_energy_wh | number | Energy supplied in the current session (Wh) |
+| power_w | number | Charging power (calculated from V × A per phase) (W) |
 | session_s | number | Duration of the current charging session (s) |
 | contactor_closed | boolean | Whether the charging relay is closed |
 | grid_v | number | Grid voltage (V) |

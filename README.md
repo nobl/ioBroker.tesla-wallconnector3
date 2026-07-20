@@ -40,364 +40,42 @@ After each successful connect to Tesla Wall Connector Gen 3, the number of retri
 5. Click on Save & Close
 
 ## Usage
-Here you can find a description of the states and how to use them. All states of this adapter are read-only states.<br>
-Please be aware that most (if not all) descriptions might be way off and might require confirmation or corrections. Pull-Requests with updates are welcome and encouraged!
+All states of this adapter are read-only. The adapter polls the following API endpoints and creates states for each value returned.
 
-### Known States
+For detailed state documentation see: [Documentation EN](docs/en/README.md) | [Dokumentation DE](docs/de/README.md)
 
-#### Channel: info
+### Channels
 
-* info.connection
+#### info
+* **info.connection** (boolean) - `true` if the adapter is connected to the Tesla Wall Connector Gen 3.
 
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |boolean|R|
+#### vitals
+Live operational data. Key states: `evse_state` (charging state), `vehicle_connected`, `vehicle_current_a`, `session_energy_wh`, `session_s`, `currentA_a`/`currentB_a`/`currentC_a` (per-phase current), `voltageA_v`/`voltageB_v`/`voltageC_v` (per-phase voltage), `grid_v`, `grid_hz`, and temperatures.
 
-   *Read-only boolean which is true if the adapter is connected to the Tesla Wall Connector Gen 3.*
-   
-#### Channel: lifetime
-   
-* alert_count
+**EVSE State codes:**
 
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
+| Code | Meaning |
+|:----:|:--------|
+| 0 | Booting |
+| 1 | Idle |
+| 2 | Connected but not ready |
+| 4 | Connected and ready |
+| 6 | Vehicle plugged in and handshaking |
+| 8 | Charging completed/interrupted |
+| 9 | Ready for charging but waiting on car |
+| 10 | Charging with reduced power |
+| 11 | Charging full power (3 phases, 16 amps each) |
 
-   *Read-only number, representing the number of alerts.*
-   
-* avg_startup_temp
+#### lifetime
+Cumulative statistics: `energy_wh`, `charge_starts`, `charging_time_s`, `uptime_s`, `contactor_cycles`, `connector_cycles`, `alert_count`.
 
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
+#### version
+Firmware and hardware identification: `firmware_version`, `serial_number`, `part_number`, plus IEEE 1547 CRC checksums depending on firmware version.
 
-   *Read-only number, representing if the average startup temperature.*
-   
-* charge_starts
+#### wifi_status
+WiFi connection status: `wifi_connected`, `internet`, `wifi_ssid`, `wifi_infra_ip`, `wifi_mac`, `wifi_signal_strength`, `wifi_rssi`, `wifi_snr`.
 
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-only string, representing the number of charging starts.*
-   
-* charging_time_s
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-only number, representing the charging time in seconds of the WC3*
-   
-* connector_cycles
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-only number, representing the number of connector cycles (plugging in and out most likely counting each as 1).*
-   
-* contactor_cycles
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-only number, representing the number of state-changes of the relais so far.*
-   
-* contactor_cycles_loaded
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-only number, representing the number of charging cycles.*
-   
-* energy_wh
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-only number, representing the amount of energy supplied in Wh.*
-   
-* thermal_foldbacks
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-only number, representing the ???*
-   
-* uptime_s
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-only number, representing the uptime in seconds of the WC3*
-   
-#### Channel: version
-
-* firmware_version
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |string|R|
-
-   *Firmware version on the Tesla Wall Connector Gen 3*
-   
-* part_number
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |string|R|
-
-   *Part number of the Tesla Wall Connector Gen 3*
-   
-* serial_number
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |string|R|
-
-   *Serial number of the Tesla Wall Connector Gen 3*
-   
-#### Channel: vitals
-
-* current_alerts
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |string|R|
-
-   *Read-Only string with details about alerts.*
-   
-* contactor_closed
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |boolean|R|
-
-   *Read-Only boolean indicating if the relais is closed.*
-   
-* grid_hz
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the grids frequency.*
-   
-* config_status
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the config status. Please help with details!*
-   
-* current[A,B,C,N]_a
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the current of line [A,B,C,N] in ampere.*
-   
-* evse_state
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the evse state. We seem to know so far: 0=booting, 1=idle, 2=connect but not ready, 3=???, 4=connected and ready, 5=???, 6=vehicle plugged in and handshaking, 7=???, 8=charging completed/interrupted, 9=ready for charging but waiting on car, 10=charging with reduced power (less than 3 phases, 16 amps each), 11=charging full power (3 Phases, 16 amps each), 12=??? *
-   
-* grid_v
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the grids voltage.*
-   
-* handle_temp_c
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the handle's tempearture in °C.*
-   
-* input_thermopile_uv
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing ???.*
-   
-* mcu_temp_c
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the master control unit's tempearture in °C.*
-   
-* pcba_temp_c
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the printed circuit board's tempearture in °C.*
-   
-* pilot_high_v
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the pilot line's high voltage.*
-   
-* pilot_low_v
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the pilot line's low voltage.*
-   
-* prox_v
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing ???.*
-   
-* relay_coil_v
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the relay coils voltage.*
-   
-* session_s
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the duration of the current charging session in seconds.*
-   
-* session_energy_wh
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the energy supplied in the current session in Wh.*
-   
-* uptime_s
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the WC3's uptime in seconds.*
-   
-* vehicle_connected
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |boolean|R|
-
-   *Read-Only boolean indicating if a vehicle is connected.*
-   
-* vehicle_current_a
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing vehicles current in ampere.*
-   
-* voltage[A,B,C]_v
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-Only number representing the voltage of line [A,B,C].*
-   
-#### Channel: wifi_status
-
-* internet
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |boolean|R|
-
-   *Read-only boolean, representing if the Tesla Wall Connector Gen 3 is connected to the internet.*
-   
-* wifi_connected
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |boolean|R|
-
-   *Read-only boolean, representing if the Tesla Wall Connector Gen 3 is connected to wifi.*
-   
-* wifi_infra_ip
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |string|R|
-
-   *Read-only string, representing the IP of the Tesla Wall Connector Gen 3.*
-   
-* wifi_mac
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |string|R|
-
-   *Read-only string, representing the MAC address of the Tesla Wall Connector Gen 3.*
-   
-* wifi_rssi
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-only number, representing the rssi of the wifi the Tesla Wall Connector Gen 3 is connected to.*
-   
-* wifi_signal_strength
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-only number, representing the signal strength of the wifi the Tesla Wall Connector Gen 3 is connected to.*
-   
-* wifi_snr
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |number|R|
-
-   *Read-only number, representing the snr of the wifi the Tesla Wall Connector Gen 3 is connected to.*
-     
-* wifi_ssid
-
-    |Data type|Permission|                                                                       
-    |:---:|:---:|
-    |string|R|
-
-   *SSID the Tesla Wall Connector Gen 3 is connected to.*
+*The adapter dynamically creates states for all values returned by the API. Additional states may appear depending on firmware version.*
 
 ## Donate
 Maintenance of this adapter can be quite time consuming. If you wish to thank the author, please use these links:
@@ -413,6 +91,10 @@ Maintenance of this adapter can be quite time consuming. If you wish to thank th
 -->
 ### **WORK IN PROGRESS**
 - (copilot) Adapter requires node.js >= 22 now
+- Added IEEE 1547 CRC state attributes
+- Fixed adapter checker warnings (jsonConfig, pollingTimeout)
+- Replaced plain setTimeout with adapter-managed timers
+- Updated documentation
 
 ### 1.1.0 (2026-03-30)
 - (iobroker-bot) Adapter requires node.js >= 20 now.

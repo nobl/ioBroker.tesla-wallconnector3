@@ -257,6 +257,8 @@ class TeslaWallconnector3 extends utils.Adapter {
 			return;
 		}
 
+		const role = state_attr[name]?.role || guessRole(valueType, write);
+
 		let obj = this.knownObjects.get(name);
 		if (!obj) {
 			obj = await this.getObjectAsync(name);
@@ -273,6 +275,9 @@ class TeslaWallconnector3 extends utils.Adapter {
 			}
 			if (obj.common.type !== valueType) {
 				newCommon.type = valueType;
+			}
+			if (obj.common.role !== role) {
+				newCommon.role = role;
 			}
 			if (obj.common.unit !== unit) {
 				newCommon.unit = unit;
@@ -295,7 +300,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 				common: {
 					name: description,
 					type: valueType,
-					role: this.guessRole(valueType, write),
+					role,
 					unit,
 					read,
 					write,
@@ -308,21 +313,6 @@ class TeslaWallconnector3 extends utils.Adapter {
 
 		await this.setStateChangedAsync(name, { val: value, ack: true });
 		await this.doDecode(name, value);
-	}
-
-	/**
-	 * @param {string} valueType - the type of the value (e.g., "boolean", "number", "string") used to determine the appropriate role for the state
-	 * @param {boolean} write switch or indicator role depending on whether the state is writable or not
-	 * @returns {string} the guessed role for the state based on its type and writability, such as "switch" for writable booleans, "indicator" for read-only booleans, "value" for numbers, and "text" for other types
-	 */
-	guessRole(valueType, write) {
-		if (valueType === "boolean") {
-			return write ? "switch" : "indicator";
-		}
-		if (valueType === "number") {
-			return "value";
-		}
-		return "text";
 	}
 
 	/**
@@ -404,6 +394,21 @@ class TeslaWallconnector3 extends utils.Adapter {
  * @param {any} value - the value to be processed, can be of any type
  * @returns {any} value - the processed value, potentially converted to a different type or scaled based on attributes associated with the key
  */
+/**
+ * @param {string} valueType - the type of the value
+ * @param {boolean} write - whether the state is writable
+ * @returns {string} the guessed role for the state
+ */
+function guessRole(valueType, write) {
+	if (valueType === "boolean") {
+		return write ? "switch" : "indicator";
+	}
+	if (valueType === "number") {
+		return "value";
+	}
+	return "text";
+}
+
 function valueTyping(key, value) {
 	if (typeof value === "string") {
 		const trimmed = value.trim();
@@ -454,7 +459,7 @@ if (require.main !== module) {
 	 */
 
 	module.exports = (options) => new TeslaWallconnector3(options);
-	module.exports._testing = { valueTyping };
+	module.exports._testing = { valueTyping, guessRole };
 } else {
 	new TeslaWallconnector3();
 }

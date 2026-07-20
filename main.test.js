@@ -17,13 +17,27 @@ const t = mainExport._testing;
 const state_attr = require("./lib/state_attr.js");
 
 describe("state_attr", () => {
-	it("should have all required properties for each entry", () => {
+	it("should have a name for each entry", () => {
 		for (const [key, attr] of Object.entries(state_attr)) {
 			assert.equal(typeof attr.name, "string", `${key}: name should be a string`);
-			assert.equal(typeof attr.unit, "string", `${key}: unit should be a string`);
-			assert.equal(typeof attr.booltype, "boolean", `${key}: booltype should be a boolean`);
-			assert.equal(typeof attr.multiply, "number", `${key}: multiply should be a number`);
 		}
+	});
+
+	it("should only contain valid optional properties", () => {
+		const validKeys = new Set(["name", "role", "unit", "booltype", "multiply"]);
+		for (const [key, attr] of Object.entries(state_attr)) {
+			for (const prop of Object.keys(attr)) {
+				assert.ok(validKeys.has(prop), `${key}: unexpected property "${prop}"`);
+			}
+		}
+	});
+
+	it("should have specific roles for voltage, current, temperature, and energy states", () => {
+		assert.equal(state_attr["vitals.grid_v"].role, "value.voltage");
+		assert.equal(state_attr["vitals.currentA_a"].role, "value.current");
+		assert.equal(state_attr["vitals.pcba_temp_c"].role, "value.temperature");
+		assert.equal(state_attr["vitals.session_energy_wh"].role, "value.energy");
+		assert.equal(state_attr["vitals.vehicle_connected"].role, "indicator.connected");
 	});
 
 	it("should have version endpoint entries", () => {
@@ -46,9 +60,9 @@ describe("state_attr", () => {
 	});
 
 	it("should not mark non-boolean fields with booltype", () => {
-		assert.equal(state_attr["vitals.grid_v"].booltype, false);
-		assert.equal(state_attr["vitals.evse_state"].booltype, false);
-		assert.equal(state_attr["version.firmware_version"].booltype, false);
+		assert.ok(!state_attr["vitals.grid_v"].booltype);
+		assert.ok(!state_attr["vitals.evse_state"].booltype);
+		assert.ok(!state_attr["version.firmware_version"].booltype);
 	});
 });
 
@@ -113,5 +127,24 @@ describe("valueTyping", () => {
 		assert.equal(t.valueTyping("totally.unknown", "abc"), "abc");
 		assert.equal(t.valueTyping("totally.unknown", 99), 99);
 		assert.equal(t.valueTyping("totally.unknown", true), true);
+	});
+});
+
+describe("guessRole", () => {
+	it("returns indicator for read-only booleans", () => {
+		assert.equal(t.guessRole("boolean", false), "indicator");
+	});
+
+	it("returns switch for writable booleans", () => {
+		assert.equal(t.guessRole("boolean", true), "switch");
+	});
+
+	it("returns value for numbers", () => {
+		assert.equal(t.guessRole("number", false), "value");
+	});
+
+	it("returns text for strings and other types", () => {
+		assert.equal(t.guessRole("string", false), "text");
+		assert.equal(t.guessRole("mixed", false), "text");
 	});
 });

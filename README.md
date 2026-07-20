@@ -89,7 +89,7 @@ Maintenance of this adapter can be quite time consuming. If you wish to thank th
   Placeholder for the next version (at the beginning of the line):
   ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 1.2.0 (2026-07-20)
 - (copilot) Adapter requires node.js >= 22 now
 - Added IEEE 1547 CRC state attributes
 - Fixed adapter checker warnings (jsonConfig, pollingTimeout)

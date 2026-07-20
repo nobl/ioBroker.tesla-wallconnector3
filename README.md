@@ -50,7 +50,7 @@ For detailed state documentation see: [Documentation EN](docs/en/README.md) | [D
 * **info.connection** (boolean) - `true` if the adapter is connected to the Tesla Wall Connector Gen 3.
 
 #### vitals
-Live operational data. Key states: `evse_state` (charging state), `vehicle_connected`, `vehicle_current_a`, `session_energy_wh`, `session_s`, `currentA_a`/`currentB_a`/`currentC_a` (per-phase current), `voltageA_v`/`voltageB_v`/`voltageC_v` (per-phase voltage), `grid_v`, `grid_hz`, and temperatures.
+Live operational data. Key states: `evse_state` (charging state), `vehicle_connected`, `vehicle_current_a`, `session_energy_wh`, `session_s`, `power_w` (calculated charging power), `currentA_a`/`currentB_a`/`currentC_a` (per-phase current), `voltageA_v`/`voltageB_v`/`voltageC_v` (per-phase voltage), `grid_v`, `grid_hz`, and temperatures.
 
 **EVSE State codes:**
 
@@ -94,6 +94,12 @@ Maintenance of this adapter can be quite time consuming. If you wish to thank th
 - Added IEEE 1547 CRC state attributes
 - Fixed adapter checker warnings (jsonConfig, pollingTimeout)
 - Replaced plain setTimeout with adapter-managed timers
+- Added calculated charging power state (vitals.power_w)
+- Added specific ioBroker roles for all states
+- Simplified state attribute definitions
+- Fixed startup recovery: adapter now retries if wallbox is unreachable at start
+- Capped retry delay at 1 hour
+- Fixed state attribute typos and placeholder names
 - Updated documentation
 
 ### 1.1.0 (2026-03-30)

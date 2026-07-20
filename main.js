@@ -23,6 +23,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 		this.langState = "en";
 		this.url = "";
 		this.unloaded = false;
+		this.connected = false;
 		this.timer = null;
 		this.http = axios.create();
 
@@ -35,7 +36,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 		try {
 			await this.getSysLang();
 			await this.checkConfig();
-			await this.checkConnection();
+			this.log.info(`connecting to Tesla Wall Connector Gen 3: ${this.config.teslawb3ip}`);
 			await this.readTeslaWC3();
 		} catch (error) {
 			this.log.error(`Startup failed: ${error?.message || error}`);
@@ -117,13 +118,6 @@ class TeslaWallconnector3 extends utils.Adapter {
 		this.log.debug(`Language: ${this.langState}`);
 	}
 
-	async checkConnection() {
-		this.log.info(`connecting to Tesla Wall Connector Gen 3: ${this.config.teslawb3ip}`);
-		await this.doGet(`${this.url}version`, this.config.pollingTimeout);
-		this.log.info(`connected to Tesla Wall Connector Gen 3: ${this.config.teslawb3ip}`);
-		this.setState("info.connection", true, true);
-	}
-
 	/**
 	 * Performs an HTTP GET request to the specified URL with a timeout.
 	 *
@@ -189,7 +183,10 @@ class TeslaWallconnector3 extends utils.Adapter {
 
 			if (this.retry > 0) {
 				this.log.info(`Connection to Tesla Wall Connector Gen 3 (${this.config.teslawb3ip}) restored.`);
+			} else if (!this.connected) {
+				this.log.info(`connected to Tesla Wall Connector Gen 3: ${this.config.teslawb3ip}`);
 			}
+			this.connected = true;
 			this.retry = 0;
 			this.setState("info.connection", true, true);
 
@@ -204,7 +201,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 
 			if (this.retry >= this.config.retries && this.config.retries < 999) {
 				if (this.config.retries === 0) {
-					this.log.error(
+					this.log.warn(
 						`Error reading from Tesla Wall Connector Gen 3 (${this.config.teslawb3ip}). No retries configured. Continuing with normal polling interval. (${error?.message || error})`,
 					);
 				} else {
@@ -221,7 +218,11 @@ class TeslaWallconnector3 extends utils.Adapter {
 				return;
 			}
 
-			const delayMs = this.config.interval * this.config.retrymultiplier * this.retry * 1000;
+			const MAX_RETRY_DELAY_MS = 3600000; // 1 hour
+			const delayMs = Math.min(
+				this.config.interval * this.config.retrymultiplier * this.retry * 1000,
+				MAX_RETRY_DELAY_MS,
+			);
 			this.log.warn(
 				`Error reading from Tesla Wall Connector Gen 3 (${this.config.teslawb3ip}). Retry ${this.retry}/${this.config.retries} in ${Math.round(delayMs / 1000)} seconds! (${error?.message || error})`,
 			);

@@ -48,7 +48,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 			this.unloaded = true;
 			this.knownObjects.clear();
 			if (this.timer) {
-				clearTimeout(this.timer);
+				this.clearTimeout(this.timer);
 				this.timer = null;
 			}
 			this.setState("info.connection", false, true);
@@ -235,13 +235,13 @@ class TeslaWallconnector3 extends utils.Adapter {
 	 * Schedules the next polling cycle.
 	 *
 	 * @param {number} delayMs - the delay in milliseconds before the next poll is initiated, calculated based on the configured interval and retry logic
-	 * @returns {NodeJS.Timeout} the timer object representing the scheduled poll, which can be used to clear the timeout if needed
+	 * @returns {ioBroker.Timeout | undefined} the timer object representing the scheduled poll, which can be used to clear the timeout if needed
 	 */
 	setNextPoll(delayMs) {
 		if (this.timer) {
-			clearTimeout(this.timer);
+			this.clearTimeout(this.timer);
 		}
-		return setTimeout(() => void this.readTeslaWC3(), delayMs);
+		return this.setTimeout(() => void this.readTeslaWC3(), delayMs);
 	}
 
 	async doState(name, value, description, unit, write, read = true) {
@@ -454,6 +454,7 @@ if (require.main !== module) {
 	 */
 
 	module.exports = (options) => new TeslaWallconnector3(options);
+	module.exports._testing = { valueTyping };
 } else {
 	new TeslaWallconnector3();
 }

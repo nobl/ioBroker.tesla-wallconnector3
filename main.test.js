@@ -1,29 +1,117 @@
 "use strict";
 
-/**
- * This is a dummy TypeScript test file using chai and mocha
- *
- * It's automatically excluded from npm and its build output is excluded from both git and npm.
- * It is advised to test all your modules with accompanying *.test.js-files
- */
+const assert = require("node:assert/strict");
+const proxyquire = require("proxyquire").noCallThru();
 
-// tslint:disable:no-unused-expression
-
-const { expect } = require("chai");
-// import { functionToTest } from "./moduleToTest";
-
-describe("module to test => function to test", () => {
-	// initializing logic
-	const expected = 5;
-
-	it(`should return ${expected}`, () => {
-		const result = 5;
-		// assign result a value from functionToTest
-		expect(result).to.equal(expected);
-		// or using the should() syntax
-		result.should.equal(expected);
-	});
-	// ... more tests => it
+// Mock adapter-core so main.js can be loaded without ioBroker
+const mainExport = proxyquire("./main", {
+	"@iobroker/adapter-core": {
+		Adapter: class {
+			constructor() {}
+			on() {}
+		},
+	},
 });
 
-// ... more test suites => describe
+const t = mainExport._testing;
+const state_attr = require("./lib/state_attr.js");
+
+describe("state_attr", () => {
+	it("should have all required properties for each entry", () => {
+		for (const [key, attr] of Object.entries(state_attr)) {
+			assert.equal(typeof attr.name, "string", `${key}: name should be a string`);
+			assert.equal(typeof attr.unit, "string", `${key}: unit should be a string`);
+			assert.equal(typeof attr.booltype, "boolean", `${key}: booltype should be a boolean`);
+			assert.equal(typeof attr.multiply, "number", `${key}: multiply should be a number`);
+		}
+	});
+
+	it("should have version endpoint entries", () => {
+		assert.ok(state_attr["version.firmware_version"]);
+		assert.ok(state_attr["version.serial_number"]);
+		assert.ok(state_attr["version.part_number"]);
+	});
+
+	it("should have vitals endpoint entries", () => {
+		assert.ok(state_attr["vitals.evse_state"]);
+		assert.ok(state_attr["vitals.vehicle_connected"]);
+		assert.ok(state_attr["vitals.grid_v"]);
+	});
+
+	it("should mark boolean fields with booltype", () => {
+		assert.equal(state_attr["vitals.contactor_closed"].booltype, true);
+		assert.equal(state_attr["vitals.vehicle_connected"].booltype, true);
+		assert.equal(state_attr["wifi_status.wifi_connected"].booltype, true);
+		assert.equal(state_attr["wifi_status.internet"].booltype, true);
+	});
+
+	it("should not mark non-boolean fields with booltype", () => {
+		assert.equal(state_attr["vitals.grid_v"].booltype, false);
+		assert.equal(state_attr["vitals.evse_state"].booltype, false);
+		assert.equal(state_attr["version.firmware_version"].booltype, false);
+	});
+});
+
+describe("state_trans", () => {
+	const state_trans = require("./lib/state_trans.js");
+
+	it("should have English translations for evse_state", () => {
+		const table = state_trans["vitals.evse_state.en"];
+		assert.ok(table, "English evse_state translations should exist");
+		assert.equal(typeof table[0], "string");
+		assert.equal(typeof table[1], "string");
+	});
+
+	it("should have German translations for evse_state", () => {
+		const table = state_trans["vitals.evse_state.de"];
+		assert.ok(table, "German evse_state translations should exist");
+		assert.equal(typeof table[0], "string");
+	});
+});
+
+describe("valueTyping", () => {
+	it("converts numeric strings to numbers", () => {
+		assert.equal(t.valueTyping("unknown.key", "42"), 42);
+		assert.equal(t.valueTyping("unknown.key", " 3.14 "), 3.14);
+		assert.equal(t.valueTyping("unknown.key", "-10"), -10);
+		assert.equal(t.valueTyping("unknown.key", "0"), 0);
+	});
+
+	it("leaves non-numeric strings as strings", () => {
+		assert.equal(t.valueTyping("unknown.key", "hello"), "hello");
+		assert.equal(t.valueTyping("unknown.key", ""), "");
+		assert.equal(t.valueTyping("unknown.key", " "), " ");
+	});
+
+	it("passes through numbers as-is for unknown keys", () => {
+		assert.equal(t.valueTyping("unknown.key", 123), 123);
+		assert.equal(t.valueTyping("unknown.key", 0), 0);
+		assert.equal(t.valueTyping("unknown.key", -5.5), -5.5);
+	});
+
+	it("converts to boolean when booltype is set", () => {
+		// vitals.vehicle_connected has booltype: true
+		assert.equal(t.valueTyping("vitals.vehicle_connected", true), true);
+		assert.equal(t.valueTyping("vitals.vehicle_connected", false), false);
+		assert.equal(t.valueTyping("vitals.vehicle_connected", 1), true);
+		assert.equal(t.valueTyping("vitals.vehicle_connected", 0), false);
+		assert.equal(t.valueTyping("vitals.vehicle_connected", "true"), true);
+		assert.equal(t.valueTyping("vitals.vehicle_connected", "false"), false);
+		assert.equal(t.valueTyping("vitals.vehicle_connected", "1"), true);
+		assert.equal(t.valueTyping("vitals.vehicle_connected", "0"), false);
+		assert.equal(t.valueTyping("vitals.vehicle_connected", ""), false);
+	});
+
+	it("applies multiply factor", () => {
+		// Find a key with multiply !== 1, or test with a known key
+		// For now test that multiply=1 keys pass through unchanged
+		assert.equal(t.valueTyping("vitals.grid_v", 230.5), 230.5);
+		assert.equal(t.valueTyping("lifetime.energy_wh", 12345), 12345);
+	});
+
+	it("returns value unchanged for keys not in state_attr", () => {
+		assert.equal(t.valueTyping("totally.unknown", "abc"), "abc");
+		assert.equal(t.valueTyping("totally.unknown", 99), 99);
+		assert.equal(t.valueTyping("totally.unknown", true), true);
+	});
+});

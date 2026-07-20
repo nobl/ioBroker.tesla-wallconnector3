@@ -10,7 +10,7 @@
 			"lg": 4,
 			"xl": 4,
 			"label": "ip",
-			"help": "iphelp",
+			"help": "ip_help",
 			"default": "0.0.0.0",
 			"newLine": true
 		},
@@ -39,7 +39,7 @@
 			"help": "pollingTimeout_help",
 			"default": 5000,
 			"min": 1000,
-			"max": 100000,
+			"max": 10000,
 			"newLine": true
 		},
 		"retries": {

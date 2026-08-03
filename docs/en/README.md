@@ -133,3 +133,11 @@ The adapter staggers requests to avoid overloading the wallbox's embedded web se
 Requests are sent one at a time (sequentially). If a single endpoint fails, the other endpoints are still processed normally. Failed endpoints are retried on the next eligible cycle.
 
 The adapter automatically repairs known Tesla firmware JSON defects (bare `nan` values, missing closing brace) before parsing responses.
+
+## Disclaimer
+
+**All product and company names or logos are trademarks™ or registered® trademarks of their respective holders. Use of them does not imply any affiliation with or endorsement by them or any associated subsidiaries! This personal project is maintained in spare time and has no business goal.**
+
+**The default settings should be safe for normal use.** Shortening the polling interval can overload the Wall Connector's embedded web server; if the wallbox stops responding, increase the interval or stop the adapter.
+
+**No warranty, and no liability.** This adapter is a spare-time project, provided as-is under the MIT license. It reads data from a Tesla Wall Connector over a local, undocumented API. The author accepts no liability for any consequence of using it, and cannot tell you whether using it affects your warranty or support arrangements with Tesla or your installer. If that is not acceptable to you, please do not use this adapter.

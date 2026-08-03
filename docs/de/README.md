@@ -133,3 +133,11 @@ Der Adapter verteilt die Anfragen zeitlich, um den eingebetteten Webserver der W
 Anfragen werden nacheinander (sequentiell) gesendet. Wenn ein einzelner Endpunkt fehlschlägt, werden die anderen Endpunkte trotzdem normal verarbeitet. Fehlgeschlagene Endpunkte werden beim nächsten fälligen Zyklus erneut abgefragt.
 
 Der Adapter repariert automatisch bekannte Tesla-Firmware-JSON-Fehler (bare `nan`-Werte, fehlende schließende Klammer) vor dem Parsen der Antworten.
+
+## Haftungsausschluss
+
+**Alle Produkt- und Firmennamen oder Logos sind Marken™ oder eingetragene® Marken der jeweiligen Inhaber. Ihre Verwendung impliziert keine Zugehörigkeit zu oder Billigung durch diese oder deren Tochtergesellschaften! Dieses persönliche Projekt wird in der Freizeit gepflegt und verfolgt kein geschäftliches Ziel.**
+
+**Die Standardeinstellungen sollten für den normalen Betrieb sicher sein.** Ein zu kurzes Abfrageintervall kann den eingebetteten Webserver des Wall Connectors überlasten. Falls die Wallbox nicht mehr reagiert, erhöhen Sie das Intervall oder stoppen Sie den Adapter.
+
+**Keine Garantie und keine Haftung.** Dieser Adapter ist ein Freizeitprojekt, bereitgestellt unter der MIT-Lizenz. Er liest Daten eines Tesla Wall Connectors über eine lokale, nicht dokumentierte API aus. Der Autor übernimmt keinerlei Haftung für Folgen der Nutzung und kann keine Aussage darüber treffen, ob die Nutzung Ihre Garantie- oder Supportvereinbarungen mit Tesla oder Ihrem Installateur beeinflusst. Wenn das für Sie nicht akzeptabel ist, verwenden Sie diesen Adapter bitte nicht.

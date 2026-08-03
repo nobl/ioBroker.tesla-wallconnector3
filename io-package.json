@@ -112,11 +112,12 @@
     ]
   },
   "native": {
-    "teslawb3ip": "0.0.0.0",
+    "teslawb3ip": "",
     "interval": 10,
     "pollingTimeout": 5000,
     "retries": 10,
-    "retrymultiplier": 2
+    "retrymultiplier": 2,
+    "splitPhase": false
   },
   "objects": [],
   "instanceObjects": [

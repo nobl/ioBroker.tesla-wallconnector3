@@ -4,9 +4,11 @@
     "ip": "IP/FQDN do Tesla Wall Connector Gen 3",
     "ip_help": "Aqui você insere o IP ou FQDN do seu Tesla Wall Connector Gen 3",
     "pollingTimeout": "Tempo limite de solicitação (ms)",
-    "pollingTimeout_help": "Aqui você define o tempo limite da solicitação ao fazer a sondagem do Tesla Wall Connector Gen 3 [mín. 1.000, máximo 100.000]. Padrão = 5000.",
+    "pollingTimeout_help": "Aqui você define o tempo limite da solicitação ao fazer a sondagem do Tesla Wall Connector Gen 3 [mín. 1.000, máximo 10.000]. Padrão = 5000.",
     "retries": "Novas tentativas de pesquisa",
     "retries_help": "Aqui você insere a frequência com que deseja que o adaptador tente novamente a pesquisa em caso de erro [min 0, max 999]. 0 = nunca, 999 = ilimitado. Default = 10.",
     "retrymultiplier": "Fator de nova tentativa de pesquisa",
-    "retrymultiplier_help": "Aqui você insere como deseja espaçar as tentativas umas das outras. A enésima tentativa acontecerá após Intervalo * Multiplicador * n segundos. [mínimo 1, máximo 10]. Padrão = 2."
+    "retrymultiplier_help": "Aqui você insere como deseja espaçar as tentativas umas das outras. A enésima tentativa acontecerá após Intervalo * Multiplicador * n segundos. [mínimo 1, máximo 10]. Padrão = 2.",
+    "splitPhase": "Cálculo de potência de fase dividida (América do Norte)",
+    "splitPhase_help": "Ativar para instalações de fase dividida na América do Norte. Usa grid_v × vehicle_current_a em vez de somas de tensão × corrente por fase. Padrão: desabilitado (cálculo trifásico)."
 }

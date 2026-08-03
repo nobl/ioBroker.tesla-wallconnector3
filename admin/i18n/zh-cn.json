@@ -4,9 +4,11 @@
     "ip": "Tesla Wall Connector Gen 3 的 IP / FQDN",
     "ip_help": "您可以在此处输入 Tesla Wall Connector Gen 3 的 IP 或 FQDN",
     "pollingTimeout": "请求超时（毫秒）",
-    "pollingTimeout_help": "您可以在此处定义从 Tesla Wall Connector Gen 3 轮询时的请求超时 [最小 1000，最大 100000]。默认 = 5000。",
+    "pollingTimeout_help": "您可以在此处定义从 Tesla Wall Connector Gen 3 轮询时的请求超时 [最小 1000，最大 10000]。默认 = 5000。",
     "retries": "轮询重试",
     "retries_help": "您可以在此处输入希望适配器在发生错误时重试轮询的频率 [最小 0，最大 999]。 0 = 从不，999 = 无限制。默认 = 10。",
     "retrymultiplier": "轮询重试因子",
-    "retrymultiplier_help": "您可以在此处输入您希望如何间隔重试。第 n 次重试将在 Interval * Multiplier * n 秒后发生。 [最小 1，最大 10]。默认 = 2。"
+    "retrymultiplier_help": "您可以在此处输入您希望如何间隔重试。第 n 次重试将在 Interval * Multiplier * n 秒后发生。 [最小 1，最大 10]。默认 = 2。",
+    "splitPhase": "分相功率计算（北美）",
+    "splitPhase_help": "适用于北美分相安装。使用 grid_v × vehicle_current_a 代替每相电压 × 电流总和。默认值：禁用（三相计算）。"
 }

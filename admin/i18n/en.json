@@ -1,12 +1,14 @@
 {
     "ip": "IP / FQDN of Tesla Wall Connector Gen 3",
-    "ip_help": "Here you enter the IP or FQDN of your Tesla Wall Connector Gen 3",
+    "ip_help": "Enter the IP address or hostname of your Tesla Wall Connector Gen 3. Do not include a scheme (http://), port, path, or credentials — only the bare hostname or IP.",
     "interval": "Polling Interval (seconds)",
-    "interval_help": "Here you enter the polling interval in seconds. The adapter will poll the Tesla Wall Connector Gen 3 at this interval. Default = 10 seconds. Minimum = 1 second. Maximum = 3600 seconds." ,
+    "interval_help": "Here you enter the polling interval in seconds. The adapter will poll the Tesla Wall Connector Gen 3 at this interval. Default = 10 seconds. Minimum = 1 second. Maximum = 3600 seconds.",
     "pollingTimeout": "Request-Timeout (ms)",
-    "pollingTimeout_help": "Here you define the request timeout when polling from Tesla Wall Connector Gen 3 [min 1000, max 100000]. Default = 5000.",
+    "pollingTimeout_help": "Here you define the request timeout when polling from Tesla Wall Connector Gen 3 [min 1000, max 10000]. Default = 5000.",
     "retries": "Polling Retries",
     "retries_help": "Here you enter how often you want the adapter to retry polling in case of error [min 0, max 999]. 0 = never, 999 = unlimited. Default = 10.",
     "retrymultiplier": "Polling Retry Factor",
-    "retrymultiplier_help": "Here you enter how you want to space retries apart of each other. n'th retry will happen after Interval * Multiplier * n seconds. [min 1, max 10]. Default = 2."
+    "retrymultiplier_help": "Here you enter how you want to space retries apart of each other. n'th retry will happen after Interval * Multiplier * n seconds. [min 1, max 10]. Default = 2.",
+    "splitPhase": "Split-phase power calculation (North America)",
+    "splitPhase_help": "Enable for North American split-phase installations. Uses grid_v × vehicle_current_a instead of per-phase voltage × current sums. Default: disabled (three-phase calculation)."
 }

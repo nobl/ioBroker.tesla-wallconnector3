@@ -11,11 +11,11 @@
 			"xl": 4,
 			"label": "ip",
 			"help": "ip_help",
-			"default": "0.0.0.0",
+			"default": "",
 			"newLine": true
 		},
 		"interval": {
-			"type": "number",				
+			"type": "number",
 			"xs": 12,
 			"sm": 12,
 			"md": 6,
@@ -68,6 +68,18 @@
 			"default": 2,
 			"min": 1,
 			"max": 10,
+			"newLine": true
+		},
+		"splitPhase": {
+			"type": "checkbox",
+			"xs": 12,
+			"sm": 12,
+			"md": 6,
+			"lg": 4,
+			"xl": 4,
+			"label": "splitPhase",
+			"help": "splitPhase_help",
+			"default": false,
 			"newLine": true
 		}
 	}

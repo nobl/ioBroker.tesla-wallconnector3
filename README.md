@@ -30,7 +30,7 @@ Additional to the adapter installation you have to add an instance of the adapte
 3. Click on the wrench symbol of the Tesla Wall Connector Gen 3 adapter
 4. Now you can see the main settings of the adapter configuration page.<br>
 ![Main Settings](/docs/en/media/mainSettings.png)
-4.1 Type in the IP-address of your Tesla Wall Connector Gen 3 (FQDN is also possible if you have a working local DNS).<br>
+4.1 Type in the IP-address or hostname of your Tesla Wall Connector Gen 3 (FQDN is also possible if you have a working local DNS). Enter only the bare address or hostname — schemes, ports, paths, and credentials are not accepted.<br>
 4.2 You can change the polling interval, too. (Default: 10 seconds)<br>
 4.3 If your network requires a higher timeout for requests sent to Tesla Wall Connector Gen 3, please change the Request-Timeout in miliseconds accordingly. (Default: 5000 miliseconds)<br>
 4.4 In case there is an issue communicating with Tesla Wall Connector Gen 3 the adapter will retry several times. You can adjust how often it will try to read from Tesla Wall Connector Gen 3. (Default: 10)<br>
@@ -90,6 +90,26 @@ Maintenance of this adapter can be quite time consuming. If you wish to thank th
   ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- Fixed numeric string coercion: Infinity and NaN values no longer silently converted to numbers
+- Added Tesla JSON response validation with firmware defect recovery (bare nan, missing closing brace)
+- Fixed stale array state cleanup: current_alerts and evse_not_ready_reasons now publish canonical JSON string and clean up obsolete child states
+- Fixed retry off-by-one: configured retries value now means actual retry attempts after initial failure
+- Fixed unload race condition: prevented post-unload state changes when poll requests are in flight
+- Refactored charging power calculation into testable pure function with input validation
+- Added North American split-phase power calculation mode (splitPhase setting)
+- Corrected wifi signal strength/RSSI metadata
+- Empty or placeholder IP address (0.0.0.0) now treated as unconfigured
+- Fixed timeout configuration help text to show correct maximum (10000 ms)
+- Added 2 MiB response size limit
+- Reduced API load: version polled hourly, lifetime and wifi_status every 60s, sequential requests
+- Ensured custom tests run in CI via extra-tests configuration
+- Safer JSON nan repair: quote-aware scanner prevents corruption of strings containing "nan"
+- Host validation: rejects URLs, paths, credentials, and ports in host configuration field
+- Disabled HTTP redirects (maxRedirects: 0) for wallbox communication
+- Added in-flight request cancellation on adapter unload (AbortController)
+- Separated persistence errors from communication errors: database write failures no longer trigger connection retry
+- Pinned automerge GitHub Action by commit SHA
+- Expanded test coverage
 
 ### 1.2.0 (2026-07-20)
 - (copilot) Adapter requires node.js >= 22 now

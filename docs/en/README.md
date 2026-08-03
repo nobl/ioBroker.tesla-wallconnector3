@@ -13,16 +13,32 @@ In addition to the adapter installation you have to add an instance of the adapt
 
 | Field         | Description |                                                                       
 |:-------------|:-------------|
-|Tesla Wall Connector Gen 3 |Type in the IP-address of your Tesla Wall Connector Gen 3 (FQDN is also possible if you have a working local DNS).|
+|Tesla Wall Connector Gen 3 |Type in the IP-address or hostname of your Tesla Wall Connector Gen 3 (FQDN is also possible if you have a working local DNS). Enter only the bare address or hostname — schemes (http://), ports, paths, credentials, and bracketed IPv6 are not accepted. An unconfigured or placeholder address (0.0.0.0) prevents polling and shows a configuration warning.|
 |Polling Interval|You can change the polling interval (how often the adapter reads from your Tesla Wall Connector Gen 3). (Default: 10 seconds)|
-|Request-Timeout|If your network requires a higher timeout for requests sent to Tesla Wall Connector Gen 3, please change the Request-Timeout in milliseconds accordingly. (Default: 5000 milliseconds)|
-|Polling Retries|In case there is an issue communicating with Tesla Wall Connector Gen 3 the adapter will retry several times. You can adjust how often it will try to read from Tesla Wall Connector Gen 3. (Default: 10)|
+|Request-Timeout|If your network requires a higher timeout for requests sent to Tesla Wall Connector Gen 3, please change the Request-Timeout in milliseconds accordingly [min 1000, max 10000]. (Default: 5000 milliseconds)|
+|Polling Retries|In case there is an issue communicating with Tesla Wall Connector Gen 3 the adapter will retry several times. You can adjust how often it will try to read from Tesla Wall Connector Gen 3. The configured value means the number of retry attempts after the initial failure. 0 = no retries, 999 = unlimited retries. (Default: 10)|
 |Polling Retry Factor|To space retries apart a bit more you can adjust the Polling Retry Factor. (Default: 2) - Example: Using default settings the 1st retry will happen 20 seconds after the initial try, the 2nd will happen 40 seconds after the 2nd try. After each successful connect to Tesla Wall Connector Gen 3, the number of retries is reset.|
+|Split-phase power calculation|Enable for North American split-phase installations. Uses grid_v x vehicle_current_a instead of per-phase voltage x current sums. (Default: disabled)|
 
 Once finished setting up configuration, hit `SAVE AND CLOSE` to leave configuration dialogue. The adapter will automatically restart.
 
 ## Usage
 All states of this adapter are read-only. The adapter polls the following API endpoints and creates states for each value returned:
+
+### API Polling
+
+The adapter uses time-based endpoint scheduling to reduce unnecessary load on the Wall Connector's embedded web server:
+
+| Endpoint | Polling Frequency |
+|:---------|:------------------|
+| vitals | Every configured polling interval |
+| lifetime | No more than once per 60 seconds |
+| wifi_status | No more than once per 60 seconds |
+| version | At startup, after reconnect, and no more than once per hour |
+
+Requests are sent sequentially rather than concurrently.
+
+The adapter recovers from common Tesla firmware JSON defects, including bare unquoted `nan` values and responses missing their final closing brace.
 
 ### Channels
 
@@ -38,7 +54,7 @@ Live operational data from the wall connector. Key states include:
 | vehicle_connected | boolean | Whether a vehicle is plugged in |
 | vehicle_current_a | number | Current drawn by the vehicle (A) |
 | session_energy_wh | number | Energy supplied in the current session (Wh) |
-| power_w | number | Charging power (calculated from V × A per phase) (W) |
+| power_w | number | Charging power (W). Three-phase mode (default): sum of V x A per phase. Split-phase mode (North America): grid_v x vehicle_current_a. Controlled by the splitPhase adapter setting. |
 | session_s | number | Duration of the current charging session (s) |
 | contactor_closed | boolean | Whether the charging relay is closed |
 | grid_v | number | Grid voltage (V) |
@@ -46,7 +62,8 @@ Live operational data from the wall connector. Key states include:
 | voltageA_v, voltageB_v, voltageC_v | number | Voltage per line (V) |
 | currentA_a, currentB_a, currentC_a, currentN_a | number | Current per line (A) |
 | pcba_temp_c, mcu_temp_c, handle_temp_c | number | Temperature readings (°C) |
-| current_alerts | string | Active alert details |
+| current_alerts | string (JSON) | Active alert details as a JSON array string (e.g. `"[]"` or `'["alert1","alert2"]'`). Numeric child states (`.0`, `.1`, ...) are maintained for backward compatibility and cleaned up automatically when the array shrinks. |
+| evse_not_ready_reasons | string (JSON) | EVSE not-ready reason codes as a JSON array string. Numeric child states are maintained for backward compatibility. |
 
 **EVSE State codes:**
 
@@ -98,8 +115,8 @@ WiFi connection status:
 | wifi_ssid | string | Connected SSID |
 | wifi_infra_ip | string | IP address |
 | wifi_mac | string | MAC address |
-| wifi_signal_strength | number | Signal strength (dBm) |
-| wifi_rssi | number | RSSI value |
+| wifi_signal_strength | number | Signal strength (unitless positive quality value) |
+| wifi_rssi | number | RSSI value (dBm) |
 | wifi_snr | number | Signal-to-noise ratio (dB) |
 
 *Note: The adapter dynamically creates states for all values returned by the API. Additional states not listed here may appear depending on firmware version.*

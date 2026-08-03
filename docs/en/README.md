@@ -1,101 +1,89 @@
-![Logo](/admin/tesla-wallconnector3.png)
-# ioBroker.tesla-wallconnector3
+# <img src="/admin/tesla-wallconnector3.png" width="36" align="top" alt=""> ioBroker.tesla-wallconnector3
 
 ## Tesla Wall Connector Gen 3 adapter for ioBroker
-Targeted at the Tesla Wall Connector Gen 3.
-Only provides read access to API data (write isn't supported by the API).
 
-## Setup
-In addition to the adapter installation you have to add an instance of the adapter.
+Reads live data from a Tesla Wall Connector Gen 3 on your local network. All states are read-only (the wallbox API does not support write access).
 
-### Configuration 
+## Configuration
+
+### Settings
 ![Main Settings](media/mainSettings.png "Main Settings")
 
-| Field         | Description |                                                                       
-|:-------------|:-------------|
-|Tesla Wall Connector Gen 3 |Type in the IP-address or hostname of your Tesla Wall Connector Gen 3 (FQDN is also possible if you have a working local DNS). Enter only the bare address or hostname — schemes (http://), ports, paths, credentials, and bracketed IPv6 are not accepted. An unconfigured or placeholder address (0.0.0.0) prevents polling and shows a configuration warning.|
-|Polling Interval|You can change the polling interval (how often the adapter reads from your Tesla Wall Connector Gen 3). (Default: 10 seconds)|
-|Request-Timeout|If your network requires a higher timeout for requests sent to Tesla Wall Connector Gen 3, please change the Request-Timeout in milliseconds accordingly [min 1000, max 10000]. (Default: 5000 milliseconds)|
-|Polling Retries|In case there is an issue communicating with Tesla Wall Connector Gen 3 the adapter will retry several times. You can adjust how often it will try to read from Tesla Wall Connector Gen 3. The configured value means the number of retry attempts after the initial failure. 0 = no retries, 999 = unlimited retries. (Default: 10)|
-|Polling Retry Factor|To space retries apart a bit more you can adjust the Polling Retry Factor. (Default: 2) - Example: Using default settings the 1st retry will happen 20 seconds after the initial try, the 2nd will happen 40 seconds after the 2nd try. After each successful connect to Tesla Wall Connector Gen 3, the number of retries is reset.|
-|Split-phase power calculation|Enable for North American split-phase installations. Uses grid_v x vehicle_current_a instead of per-phase voltage x current sums. (Default: disabled)|
+| Field | Description |
+|:------|:------------|
+| Tesla Wall Connector Gen 3 | IP address or hostname of your wallbox (e.g. `192.168.1.50` or `wallbox.local`). Enter only the bare address — no scheme (`http://`), port, path, credentials, or bracketed IPv6. An empty field or `0.0.0.0` is treated as unconfigured and prevents polling. |
+| Polling Interval | How often the adapter reads data from the wallbox, in seconds. Default: 10. Range: 1 - 3600. |
+| Request Timeout | Maximum time to wait for a response from the wallbox, in milliseconds. Default: 5000. Range: 1000 - 10000. |
+| Polling Retries | How many times to retry after a failed request. The value means retry attempts after the initial failure. 0 = no retries, 999 = unlimited. Default: 10. |
+| Polling Retry Factor | Spaces retries further apart. The n-th retry waits interval x factor x n seconds after the previous attempt. Example with defaults: 1st retry after 20 s, 2nd after 40 s. Resets after a successful read. Default: 2. Range: 1 - 10. |
+| Split-phase power calculation | Enable for North American split-phase installations. Uses grid_v x vehicle_current_a instead of per-phase voltage x current sums. Default: disabled (three-phase calculation). |
 
-Once finished setting up configuration, hit `SAVE AND CLOSE` to leave configuration dialogue. The adapter will automatically restart.
+After saving, the adapter restarts and begins polling immediately.
 
-## Usage
-All states of this adapter are read-only. The adapter polls the following API endpoints and creates states for each value returned:
+## States
 
-### API Polling
+All states are read-only. The adapter polls the wallbox API and creates states for each value returned.
 
-The adapter uses time-based endpoint scheduling to reduce unnecessary load on the Wall Connector's embedded web server:
-
-| Endpoint | Polling Frequency |
-|:---------|:------------------|
-| vitals | Every configured polling interval |
-| lifetime | No more than once per 60 seconds |
-| wifi_status | No more than once per 60 seconds |
-| version | At startup, after reconnect, and no more than once per hour |
-
-Requests are sent sequentially rather than concurrently.
-
-The adapter recovers from common Tesla firmware JSON defects, including bare unquoted `nan` values and responses missing their final closing brace.
-
-### Channels
-
-#### info
-* **info.connection** (boolean) - `true` if the adapter is connected to the Tesla Wall Connector Gen 3.
-
-#### vitals
-Live operational data from the wall connector. Key states include:
+### info
 
 | State | Type | Description |
 |:------|:----:|:------------|
-| evse_state | number | EVSE charging state (see table below) |
+| info.connection | boolean | `true` when the adapter can reach the wallbox and receives valid responses. |
+
+### vitals
+
+Live operational data, polled every interval.
+
+| State | Type | Description |
+|:------|:----:|:------------|
+| evse_state | number | Charging state (see table below) |
 | vehicle_connected | boolean | Whether a vehicle is plugged in |
 | vehicle_current_a | number | Current drawn by the vehicle (A) |
-| session_energy_wh | number | Energy supplied in the current session (Wh) |
-| power_w | number | Charging power (W). Three-phase mode (default): sum of V x A per phase. Split-phase mode (North America): grid_v x vehicle_current_a. Controlled by the splitPhase adapter setting. |
+| session_energy_wh | number | Energy delivered in the current session (Wh) |
+| power_w | number | Charging power (W), calculated by the adapter. Three-phase mode: sum of V x A per phase. Split-phase mode: grid_v x vehicle_current_a. |
 | session_s | number | Duration of the current charging session (s) |
 | contactor_closed | boolean | Whether the charging relay is closed |
 | grid_v | number | Grid voltage (V) |
 | grid_hz | number | Grid frequency (Hz) |
-| voltageA_v, voltageB_v, voltageC_v | number | Voltage per line (V) |
-| currentA_a, currentB_a, currentC_a, currentN_a | number | Current per line (A) |
+| voltageA_v, voltageB_v, voltageC_v | number | Voltage per phase (V) |
+| currentA_a, currentB_a, currentC_a, currentN_a | number | Current per phase (A) |
 | pcba_temp_c, mcu_temp_c, handle_temp_c | number | Temperature readings (°C) |
-| current_alerts | string (JSON) | Active alert details as a JSON array string (e.g. `"[]"` or `'["alert1","alert2"]'`). Numeric child states (`.0`, `.1`, ...) are maintained for backward compatibility and cleaned up automatically when the array shrinks. |
-| evse_not_ready_reasons | string (JSON) | EVSE not-ready reason codes as a JSON array string. Numeric child states are maintained for backward compatibility. |
+| current_alerts | string (JSON) | Active alerts as a JSON array (e.g. `"[]"`). Numeric child states (`.0`, `.1`, ...) are kept for backward compatibility and cleaned up automatically when the array shrinks. |
+| evse_not_ready_reasons | string (JSON) | Reasons the wallbox is not ready, as a JSON array. Child states like current_alerts. |
 
-**EVSE State codes:**
+**EVSE state codes:**
 
 | Code | Meaning |
 |:----:|:--------|
 | 0 | Booting |
 | 1 | Idle |
-| 2 | Connected but not ready |
-| 4 | Connected and ready |
-| 6 | Vehicle plugged in and handshaking |
-| 8 | Charging completed/interrupted |
-| 9 | Ready for charging but waiting on car |
-| 10 | Charging with reduced power (less than 3 phases, 16 amps each) |
-| 11 | Charging full power (3 phases, 16 amps each) |
+| 2 | Vehicle connected but not ready to charge |
+| 4 | Vehicle connected and ready to charge |
+| 6 | Vehicle plugged in, handshake in progress |
+| 8 | Charging completed or interrupted |
+| 9 | Ready to charge, waiting for the vehicle |
+| 10 | Charging at reduced power (less than 3 phases, 16 amps each) |
+| 11 | Charging at full power (3 phases, 16 A each) |
 
-*Note: States 3, 5, 7, 12 are unknown. Pull requests with clarifications are welcome!*
+*States 3, 5, 7, and 12 are undocumented. If you know what they mean, pull requests are welcome!*
 
-#### lifetime
-Cumulative lifetime statistics:
+### lifetime
+
+Cumulative statistics over the lifetime of the wallbox. Polled no more than once per 60 seconds.
 
 | State | Type | Description |
 |:------|:----:|:------------|
-| energy_wh | number | Total energy supplied (Wh) |
+| energy_wh | number | Total energy delivered (Wh) |
 | charge_starts | number | Number of charging sessions started |
-| charging_time_s | number | Total charging time (s) |
+| charging_time_s | number | Total time spent charging (s) |
 | uptime_s | number | Total uptime (s) |
-| contactor_cycles | number | Number of relay state changes |
+| contactor_cycles | number | Number of relay open/close cycles |
 | connector_cycles | number | Number of plug-in/plug-out cycles |
-| alert_count | number | Number of alerts |
+| alert_count | number | Total number of alerts |
 
-#### version
-Firmware and hardware identification:
+### version
+
+Firmware and hardware identification. Polled at startup, after reconnection, and no more than once per hour.
 
 | State | Type | Description |
 |:------|:----:|:------------|
@@ -103,20 +91,36 @@ Firmware and hardware identification:
 | serial_number | string | Serial number |
 | part_number | string | Part number |
 
-Additional states like `git_branch`, `web_service`, and IEEE 1547 CRC checksums may be present depending on firmware version.
+Additional states like `git_branch`, `web_service`, and IEEE 1547 CRC checksums may appear depending on firmware version.
 
-#### wifi_status
-WiFi connection status:
+### wifi_status
+
+WiFi connection details. Polled no more than once per 60 seconds.
 
 | State | Type | Description |
 |:------|:----:|:------------|
-| wifi_connected | boolean | Whether the WC3 is connected to WiFi |
-| internet | boolean | Whether the WC3 has internet access |
+| wifi_connected | boolean | Whether the wallbox is connected to WiFi |
+| internet | boolean | Whether the wallbox has internet access |
 | wifi_ssid | string | Connected SSID |
-| wifi_infra_ip | string | IP address |
+| wifi_infra_ip | string | IP address on the WiFi network |
 | wifi_mac | string | MAC address |
-| wifi_signal_strength | number | Signal strength (unitless positive quality value) |
-| wifi_rssi | number | RSSI value (dBm) |
+| wifi_signal_strength | number | Signal strength (unitless quality value, higher is better) |
+| wifi_rssi | number | RSSI (dBm) |
 | wifi_snr | number | Signal-to-noise ratio (dB) |
 
-*Note: The adapter dynamically creates states for all values returned by the API. Additional states not listed here may appear depending on firmware version.*
+*The adapter dynamically creates states for all values returned by the API. Your wallbox may report additional states not listed here, depending on firmware version.*
+
+## Polling behaviour
+
+The adapter staggers requests to avoid overloading the wallbox's embedded web server:
+
+| Endpoint | Frequency |
+|:---------|:----------|
+| vitals | Every polling interval |
+| lifetime | At most every 60 seconds |
+| wifi_status | At most every 60 seconds |
+| version | At startup, after reconnection, and at most once per hour |
+
+Requests are sent one at a time (sequentially). If a single endpoint fails, the other endpoints are still processed normally. Failed endpoints are retried on the next eligible cycle.
+
+The adapter automatically repairs known Tesla firmware JSON defects (bare `nan` values, missing closing brace) before parsing responses.

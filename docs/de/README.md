@@ -1,45 +1,46 @@
-![Logo](/admin/tesla-wallconnector3.png)
-# ioBroker.tesla-wallconnector3
+# <img src="/admin/tesla-wallconnector3.png" width="36" align="top" alt=""> ioBroker.tesla-wallconnector3
 
 ## Tesla Wall Connector Gen 3 Adapter für ioBroker
-Ausgerichtet auf den Tesla Wall Connector Gen 3.
-Bietet nur Lesezugriff auf API-Daten (Schreiben wird von der API nicht unterstützt).
+
+Liest Live-Daten eines Tesla Wall Connector Gen 3 im lokalen Netzwerk aus. Alle Datenpunkte sind schreibgeschützt (die API der Wallbox unterstützt keinen Schreibzugriff).
 
 ## Konfiguration
 
-### Fenster "Haupteinstellungen"
+### Einstellungen
 ![Main Settings](media/mainSettings.png "Haupteinstellungen")
 
-| Feld         | Beschreibung |                                                                       
-|:-------------|:-------------|
-|Tesla Wall Connector Gen 3    |Hier wird die IP-Adresse oder der Hostname des gewünschten Tesla Wall Connector Gen 3 angegeben. Falls im Netzwerk ein funktionierender DNS existiert, kann auch der FQDN angegeben werden. Nur die reine Adresse oder den Hostnamen eingeben — Schema (http://), Port, Pfad, Zugangsdaten und IPv6 in eckigen Klammern werden nicht akzeptiert. Ein leeres Feld oder der Platzhalter `0.0.0.0` wird als nicht konfiguriert behandelt und verhindert die Abfrage.|
-|Abfrageintervall|Hier wird eingegeben, in welchen Zeitintervallen (Sekunden) die Werte vom Tesla Wall Connector Gen 3 abgerufen werden. (Standard: 10 Sekunden)|
-|Request-Timeout|Hier wird eingegeben, nach wievielen Millisekunden eine Anfrage spätestens vom Tesla Wall Connector Gen 3 beantwortet sein muss, bevor die Anfrage abgebrochen wird. [min. 1000, max. 10000] (Standard: 5000)|
-|Wiederholungsversuche|Hier wird angegeben, wie oft nach dem initialen Fehlversuch erneut versucht werden soll, den Tesla Wall Connector Gen 3 anzufragen. 0 = keine Wiederholungen, 999 = unbegrenzt. (Standard: 10)|
-|Polling-Wiederholungsfaktor|Mit diesem Wert kann der Abstand zwischen den Wiederholungsversuchen beeinflusst werden. Es gilt: der n'te Wiederholungsversuch erfolgt nach Intervall * Multiplikator * n Sekunden nach Versuch n-1. Beispiel: Mit Standardwerten erfolgt der 1. Wiederholungsversuch 20 Sekunden nach dem initialen Versuch und der 2. Wiederholungsversuch erfolgt 40 Sekunden nach dem 1. Ein erfolgreicher Datenabruf setzt den Zähler für Wiederholungen zurück.|
-|Split-Phase-Leistungsberechnung|Aktivieren für nordamerikanische Split-Phase-Installationen. Verwendet grid_v × vehicle_current_a anstelle der phasenweisen Spannungs-/Strom-Summenberechnung. Standard: deaktiviert (Dreiphasen-Berechnung).|
+| Feld | Beschreibung |
+|:-----|:-------------|
+| Tesla Wall Connector Gen 3 | IP-Adresse oder Hostname der Wallbox (z. B. `192.168.1.50` oder `wallbox.local`). Nur die reine Adresse eingeben — kein Schema (`http://`), kein Port, kein Pfad, keine Zugangsdaten, kein IPv6 in eckigen Klammern. Ein leeres Feld oder `0.0.0.0` wird als nicht konfiguriert behandelt und verhindert die Abfrage. |
+| Abfrageintervall | Wie oft der Adapter Daten von der Wallbox liest, in Sekunden. Standard: 10. Bereich: 1 - 3600. |
+| Request-Timeout | Maximale Wartezeit auf eine Antwort der Wallbox, in Millisekunden. Standard: 5000. Bereich: 1000 - 10000. |
+| Wiederholungsversuche | Wie oft nach einem fehlgeschlagenen Abruf erneut versucht wird. Der Wert bedeutet Wiederholungen nach dem initialen Fehlversuch. 0 = keine Wiederholungen, 999 = unbegrenzt. Standard: 10. |
+| Polling-Wiederholungsfaktor | Vergrößert den Abstand zwischen Wiederholungen. Der n-te Versuch erfolgt nach Intervall x Faktor x n Sekunden. Beispiel mit Standardwerten: 1. Wiederholung nach 20 s, 2. nach 40 s. Wird nach einem erfolgreichen Abruf zurückgesetzt. Standard: 2. Bereich: 1 - 10. |
+| Split-Phase-Leistungsberechnung | Für nordamerikanische Split-Phase-Installationen aktivieren. Verwendet grid_v x vehicle_current_a anstelle der phasenweisen V x A Summe. Standard: deaktiviert (Dreiphasen-Berechnung). |
 
-Nach Abschluss der Konfiguration wird der Konfigurationsdialog mit `SPEICHERN UND SCHLIEßEN` verlassen. 
-Dadurch erfolgt im Anschluss ein Neustart des Adapters.
+Nach dem Speichern startet der Adapter neu und beginnt sofort mit der Abfrage.
 
 ## Datenpunkte
-Alle Datenpunkte dieses Adapters sind schreibgeschützt. Der Adapter fragt die folgenden API-Endpunkte ab und erstellt für jeden zurückgegebenen Wert einen Datenpunkt:
 
-### Kanäle
+Alle Datenpunkte sind schreibgeschützt. Der Adapter fragt die Wallbox-API ab und erstellt für jeden zurückgegebenen Wert einen Datenpunkt.
 
-#### info
-* **info.connection** (boolean) - `true` wenn der Adapter mit dem Tesla Wall Connector Gen 3 verbunden ist.
-
-#### vitals
-Live-Betriebsdaten des Wall Connectors. Die wichtigsten Datenpunkte:
+### info
 
 | Datenpunkt | Typ | Beschreibung |
 |:-----------|:---:|:-------------|
-| evse_state | number | EVSE-Ladezustand (siehe Tabelle unten) |
+| info.connection | boolean | `true` wenn der Adapter die Wallbox erreichen kann und gültige Antworten erhält. |
+
+### vitals
+
+Live-Betriebsdaten, bei jedem Abfrageintervall aktualisiert.
+
+| Datenpunkt | Typ | Beschreibung |
+|:-----------|:---:|:-------------|
+| evse_state | number | Ladezustand (siehe Tabelle unten) |
 | vehicle_connected | boolean | Ob ein Fahrzeug angeschlossen ist |
 | vehicle_current_a | number | Vom Fahrzeug gezogener Strom (A) |
 | session_energy_wh | number | In der aktuellen Sitzung gelieferte Energie (Wh) |
-| power_w | number | Ladeleistung (berechnet). Dreiphasen-Modus (Standard): Summe aus V × A pro Phase. Split-Phase-Modus (Nordamerika): grid_v × vehicle_current_a. |
+| power_w | number | Ladeleistung (W), vom Adapter berechnet. Dreiphasen-Modus: Summe aus V x A pro Phase. Split-Phase-Modus: grid_v x vehicle_current_a. |
 | session_s | number | Dauer der aktuellen Ladesitzung (s) |
 | contactor_closed | boolean | Ob das Laderelais geschlossen ist |
 | grid_v | number | Netzspannung (V) |
@@ -47,27 +48,28 @@ Live-Betriebsdaten des Wall Connectors. Die wichtigsten Datenpunkte:
 | voltageA_v, voltageB_v, voltageC_v | number | Spannung pro Phase (V) |
 | currentA_a, currentB_a, currentC_a, currentN_a | number | Strom pro Phase (A) |
 | pcba_temp_c, mcu_temp_c, handle_temp_c | number | Temperaturwerte (°C) |
-| current_alerts | string (JSON) | Aktive Alarme als JSON-Array (z.B. `"[]"` oder `'["alert1"]'`). Numerische Kind-Datenpunkte (`.0`, `.1`, ...) werden aus Kompatibilitätsgründen beibehalten und bei Verkleinerung des Arrays automatisch bereinigt. |
-| evse_not_ready_reasons | string (JSON) | Gründe für Nicht-Bereitschaft als JSON-Array. Numerische Kind-Datenpunkte wie bei current_alerts. |
+| current_alerts | string (JSON) | Aktive Alarme als JSON-Array (z. B. `"[]"`). Numerische Kind-Datenpunkte (`.0`, `.1`, ...) werden aus Kompatibilitätsgründen beibehalten und bei Verkleinerung des Arrays automatisch bereinigt. |
+| evse_not_ready_reasons | string (JSON) | Gründe für Nicht-Bereitschaft als JSON-Array. Kind-Datenpunkte wie bei current_alerts. |
 
-**EVSE State-Codes:**
+**EVSE-State-Codes:**
 
 | Code | Bedeutung |
 |:----:|:----------|
 | 0 | Wallbox startet |
 | 1 | Idle |
-| 2 | Fahrzeug angeschlossen aber nicht bereit |
-| 4 | Fahrzeug angeschlossen und bereit |
-| 6 | Fahrzeug angeschlossen - Handshake läuft |
-| 8 | Laden beendet / unterbrochen |
-| 9 | Bereit für Laden - warte auf Fahrzeug |
-| 10 | Laden mit reduzierter Leistung (weniger als 3 Phasen, je 16 Ampere) |
-| 11 | Laden mit voller Leistung (3 Phasen, je 16 Ampere) |
+| 2 | Fahrzeug angeschlossen, aber nicht ladebereit |
+| 4 | Fahrzeug angeschlossen und ladebereit |
+| 6 | Fahrzeug angeschlossen, Handshake läuft |
+| 8 | Laden beendet oder unterbrochen |
+| 9 | Ladebereit, wartet auf Fahrzeug |
+| 10 | Laden mit reduzierter Leistung (< 3 Phasen je 16 Ampere) |
+| 11 | Laden mit voller Leistung (3 Phasen, je 16 A) |
 
-*Hinweis: Die States 3, 5, 7, 12 sind unbekannt. Pull-Requests mit Klärungen sind willkommen!*
+*Die States 3, 5, 7 und 12 sind undokumentiert. Falls Sie deren Bedeutung kennen, sind Pull-Requests willkommen!*
 
-#### lifetime
-Kumulative Lebensdauerstatistiken:
+### lifetime
+
+Kumulative Statistiken über die Lebensdauer der Wallbox. Wird maximal alle 60 Sekunden abgefragt.
 
 | Datenpunkt | Typ | Beschreibung |
 |:-----------|:---:|:-------------|
@@ -75,12 +77,13 @@ Kumulative Lebensdauerstatistiken:
 | charge_starts | number | Anzahl gestarteter Ladevorgänge |
 | charging_time_s | number | Gesamte Ladezeit (s) |
 | uptime_s | number | Gesamte Betriebszeit (s) |
-| contactor_cycles | number | Anzahl der Relais-Zustandsänderungen |
+| contactor_cycles | number | Anzahl der Relais-Schaltzyklen |
 | connector_cycles | number | Anzahl der Ein-/Aussteck-Zyklen |
-| alert_count | number | Anzahl der Alarme |
+| alert_count | number | Gesamtanzahl der Alarme |
 
-#### version
-Firmware- und Hardware-Identifikation:
+### version
+
+Firmware- und Hardware-Identifikation. Wird beim Start, nach Wiederverbindung und maximal einmal pro Stunde abgefragt.
 
 | Datenpunkt | Typ | Beschreibung |
 |:-----------|:---:|:-------------|
@@ -90,33 +93,34 @@ Firmware- und Hardware-Identifikation:
 
 Weitere Datenpunkte wie `git_branch`, `web_service` und IEEE 1547 CRC-Prüfsummen können je nach Firmware-Version vorhanden sein.
 
-#### wifi_status
-WLAN-Verbindungsstatus:
+### wifi_status
+
+WLAN-Verbindungsdaten. Wird maximal alle 60 Sekunden abgefragt.
 
 | Datenpunkt | Typ | Beschreibung |
 |:-----------|:---:|:-------------|
-| wifi_connected | boolean | Ob der WC3 mit dem WLAN verbunden ist |
-| internet | boolean | Ob der WC3 Internetzugang hat |
+| wifi_connected | boolean | Ob die Wallbox mit dem WLAN verbunden ist |
+| internet | boolean | Ob die Wallbox Internetzugang hat |
 | wifi_ssid | string | Verbundene SSID |
-| wifi_infra_ip | string | IP-Adresse |
+| wifi_infra_ip | string | IP-Adresse im WLAN |
 | wifi_mac | string | MAC-Adresse |
-| wifi_signal_strength | number | Signalstärke (positiver Qualitätswert, einheitenlos) |
+| wifi_signal_strength | number | Signalstärke (einheitenloser Qualitätswert, höher = besser) |
 | wifi_rssi | number | RSSI-Wert (dBm) |
 | wifi_snr | number | Signal-Rausch-Verhältnis (dB) |
 
-*Hinweis: Der Adapter erstellt dynamisch Datenpunkte für alle von der API zurückgegebenen Werte. Zusätzliche, hier nicht aufgeführte Datenpunkte können je nach Firmware-Version erscheinen.*
+*Der Adapter erstellt dynamisch Datenpunkte für alle von der API zurückgegebenen Werte. Je nach Firmware-Version kann Ihre Wallbox weitere, hier nicht aufgeführte Datenpunkte liefern.*
 
-### API-Abfragen
+## Abfrageverhalten
 
-Der Adapter reduziert die Anzahl der API-Anfragen, indem nicht alle Endpunkte bei jedem Abfrageintervall abgefragt werden:
+Der Adapter verteilt die Anfragen zeitlich, um den eingebetteten Webserver der Wallbox nicht zu überlasten:
 
-| Endpunkt | Abfragefrequenz |
-|:---------|:----------------|
-| vitals | Bei jedem konfigurierten Abfrageintervall |
+| Endpunkt | Häufigkeit |
+|:---------|:-----------|
+| vitals | Bei jedem Abfrageintervall |
 | lifetime | Maximal alle 60 Sekunden |
 | wifi_status | Maximal alle 60 Sekunden |
 | version | Beim Start, nach Wiederverbindung und maximal einmal pro Stunde |
 
-Anfragen werden sequentiell gesendet, um den eingebetteten Webserver des Wall Connectors nicht zu überlasten. Fehlgeschlagene Endpunkte werden beim nächsten fälligen Zyklus erneut abgefragt.
+Anfragen werden nacheinander (sequentiell) gesendet. Wenn ein einzelner Endpunkt fehlschlägt, werden die anderen Endpunkte trotzdem normal verarbeitet. Fehlgeschlagene Endpunkte werden beim nächsten fälligen Zyklus erneut abgefragt.
 
-Der Adapter behebt automatisch bekannte Tesla-Firmware-JSON-Fehler (bare `nan`-Werte, fehlende schließende Klammer) und validiert Antworten vor der Verarbeitung. Ungültige oder unplausible Antworten eines Endpunkts beeinträchtigen nicht die Verarbeitung gültiger Antworten anderer Endpunkte.
+Der Adapter repariert automatisch bekannte Tesla-Firmware-JSON-Fehler (bare `nan`-Werte, fehlende schließende Klammer) vor dem Parsen der Antworten.

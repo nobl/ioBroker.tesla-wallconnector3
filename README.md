@@ -1,6 +1,4 @@
-![Logo](admin/tesla-wallconnector3.png)
-
-# ioBroker.tesla-wallconnector3
+# <img src="admin/tesla-wallconnector3.png" width="36" align="top" alt=""> ioBroker.tesla-wallconnector3
 
 [![NPM version](http://img.shields.io/npm/v/iobroker.tesla-wallconnector3.svg)](https://www.npmjs.com/package/iobroker.tesla-wallconnector3)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.tesla-wallconnector3.svg)](https://www.npmjs.com/package/iobroker.tesla-wallconnector3)
@@ -12,70 +10,43 @@
 
 **Tests:** ![Test and Release](https://github.com/nobl/ioBroker.tesla-wallconnector3/workflows/Test%20and%20Release/badge.svg)
 
-## tesla wall connector gen 3 adapter for ioBroker
+## Tesla Wall Connector Gen 3 adapter for ioBroker
 
-[Dokumentation DE](docs/de/README.md)<br>
-[Documentation EN](docs/en/README.md)
+Reads live data from a [Tesla Wall Connector Gen 3](https://www.tesla.com/support/charging/wall-connector) on your local network. The adapter polls the wallbox API and creates ioBroker states for charging status, power, energy, temperatures, WiFi, and more.
 
-Targeted at the Tesla Wall Connector Gen 3 available at https://shop.tesla.com/de_de/product/gen-3-wall-connector .
-Only provides read access to API data (write isn't supported by the API).
+All states are read-only (the wallbox API does not support write access).
 
+[Documentation EN](docs/en/README.md) | [Dokumentation DE](docs/de/README.md)
 
 ## Setup
-Additional to the adapter installation you have to add an instance of the adapter.
 
-### ioBroker 
-1. Open your ioBroker interface in a browser (eg: 192.168.178.42:8081) (if configuration dialogue was opened automatically after installation, skip to 4.).
-2. Navigate to Tab "Instances"
-3. Click on the wrench symbol of the Tesla Wall Connector Gen 3 adapter
-4. Now you can see the main settings of the adapter configuration page.<br>
-![Main Settings](/docs/en/media/mainSettings.png)
-4.1 Type in the IP-address or hostname of your Tesla Wall Connector Gen 3 (FQDN is also possible if you have a working local DNS). Enter only the bare address or hostname — schemes, ports, paths, and credentials are not accepted.<br>
-4.2 You can change the polling interval, too. (Default: 10 seconds)<br>
-4.3 If your network requires a higher timeout for requests sent to Tesla Wall Connector Gen 3, please change the Request-Timeout in miliseconds accordingly. (Default: 5000 miliseconds)<br>
-4.4 In case there is an issue communicating with Tesla Wall Connector Gen 3 the adapter will retry several times. You can adjust how often it will try to read from Tesla Wall Connector Gen 3. (Default: 10)<br>
-4.5 To space retries apart a bit more you can adjust the Polling Retry Factor. (Default: 2)<br>
-Example: Using default settings the 1st retry will happen 20 seconds after the initial try, the 2nd will happen 40 seconds after the 2nd try.<br>
-After each successful connect to Tesla Wall Connector Gen 3, the number of retries is reset.
-5. Click on Save & Close
+1. Install the adapter and add an instance.
+2. Open the instance configuration:
+   ![Main Settings](/docs/en/media/mainSettings.png)
+3. Enter the IP address or hostname of your Wall Connector (e.g. `192.168.1.50` or `wallbox.local`). Enter only the bare address — no `http://`, no port, no path.
+4. Adjust the remaining settings if needed (defaults work well for most setups):
+   - **Polling interval** — how often to read data (default: 10 s)
+   - **Request timeout** — how long to wait for a response, in milliseconds (default: 5000, range: 1000 - 10000)
+   - **Retries** — how many times to retry after a failed poll (default: 10, 0 = never, 999 = unlimited)
+   - **Retry factor** — spaces retries further apart; the n-th retry waits interval x factor x n seconds (default: 2)
+   - **Split-phase power** — enable for North American split-phase installations
+5. Click **Save & Close**. The adapter will start polling immediately.
 
-## Usage
-All states of this adapter are read-only. The adapter polls the following API endpoints and creates states for each value returned.
+## States
 
-For detailed state documentation see: [Documentation EN](docs/en/README.md) | [Dokumentation DE](docs/de/README.md)
+The adapter creates states under four channels. For a full reference of every state, see the [detailed documentation](docs/en/README.md).
 
-### Channels
+| Channel | What it contains |
+|:--------|:-----------------|
+| **info** | `info.connection` — whether the adapter can reach the wallbox |
+| **vitals** | Live data: charging state, vehicle connected, current, voltage, power, temperatures, alerts |
+| **lifetime** | Cumulative stats: total energy, charge starts, uptime, contactor/connector cycles |
+| **wifi_status** | WiFi connection: SSID, IP, MAC, signal strength, RSSI |
+| **version** | Firmware version, serial number, part number |
 
-#### info
-* **info.connection** (boolean) - `true` if the adapter is connected to the Tesla Wall Connector Gen 3.
+The adapter also creates a calculated `vitals.power_w` state showing the current charging power in watts.
 
-#### vitals
-Live operational data. Key states: `evse_state` (charging state), `vehicle_connected`, `vehicle_current_a`, `session_energy_wh`, `session_s`, `power_w` (calculated charging power), `currentA_a`/`currentB_a`/`currentC_a` (per-phase current), `voltageA_v`/`voltageB_v`/`voltageC_v` (per-phase voltage), `grid_v`, `grid_hz`, and temperatures.
-
-**EVSE State codes:**
-
-| Code | Meaning |
-|:----:|:--------|
-| 0 | Booting |
-| 1 | Idle |
-| 2 | Connected but not ready |
-| 4 | Connected and ready |
-| 6 | Vehicle plugged in and handshaking |
-| 8 | Charging completed/interrupted |
-| 9 | Ready for charging but waiting on car |
-| 10 | Charging with reduced power |
-| 11 | Charging full power (3 phases, 16 amps each) |
-
-#### lifetime
-Cumulative statistics: `energy_wh`, `charge_starts`, `charging_time_s`, `uptime_s`, `contactor_cycles`, `connector_cycles`, `alert_count`.
-
-#### version
-Firmware and hardware identification: `firmware_version`, `serial_number`, `part_number`, plus IEEE 1547 CRC checksums depending on firmware version.
-
-#### wifi_status
-WiFi connection status: `wifi_connected`, `internet`, `wifi_ssid`, `wifi_infra_ip`, `wifi_mac`, `wifi_signal_strength`, `wifi_rssi`, `wifi_snr`.
-
-*The adapter dynamically creates states for all values returned by the API. Additional states may appear depending on firmware version.*
+*Additional states may appear depending on your wallbox firmware version.*
 
 ## Donate
 Maintenance of this adapter can be quite time consuming. If you wish to thank the author, please use these links:
@@ -90,26 +61,19 @@ Maintenance of this adapter can be quite time consuming. If you wish to thank th
   ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- Added North American split-phase power calculation mode (splitPhase setting)
+- Added Tesla firmware JSON defect recovery (bare nan values, missing closing brace)
 - Fixed numeric string coercion: Infinity and NaN values no longer silently converted to numbers
-- Added Tesla JSON response validation with firmware defect recovery (bare nan, missing closing brace)
 - Fixed stale array state cleanup: current_alerts and evse_not_ready_reasons now publish canonical JSON string and clean up obsolete child states
 - Fixed retry off-by-one: configured retries value now means actual retry attempts after initial failure
 - Fixed unload race condition: prevented post-unload state changes when poll requests are in flight
-- Refactored charging power calculation into testable pure function with input validation
-- Added North American split-phase power calculation mode (splitPhase setting)
 - Corrected wifi signal strength/RSSI metadata
-- Empty or placeholder IP address (0.0.0.0) now treated as unconfigured
 - Fixed timeout configuration help text to show correct maximum (10000 ms)
-- Added 2 MiB response size limit
-- Reduced API load: version polled hourly, lifetime and wifi_status every 60s, sequential requests
-- Ensured custom tests run in CI via extra-tests configuration
-- Safer JSON nan repair: quote-aware scanner prevents corruption of strings containing "nan"
+- Empty or placeholder IP address (0.0.0.0) now treated as unconfigured
 - Host validation: rejects URLs, paths, credentials, and ports in host configuration field
-- Disabled HTTP redirects (maxRedirects: 0) for wallbox communication
-- Added in-flight request cancellation on adapter unload (AbortController)
+- Reduced API load: version polled hourly, lifetime and wifi_status every 60s, sequential requests
+- Added 2 MiB response size limit
 - Separated persistence errors from communication errors: database write failures no longer trigger connection retry
-- Pinned automerge GitHub Action by commit SHA
-- Expanded test coverage
 
 ### 1.2.0 (2026-07-20)
 - (copilot) Adapter requires node.js >= 22 now

@@ -1731,3 +1731,638 @@ describe("maxRedirects", () => {
 		assert.equal(instance.http.defaults.maxRedirects, 0);
 	});
 });
+
+// ---------------------------------------------------------------------------
+// state type stability across null values
+// ---------------------------------------------------------------------------
+describe("state type stability across null", () => {
+	function createStatefulInstance() {
+		const instance = createInstance();
+		const extendCalls = [];
+		const createdObjects = {};
+		const stateValues = {};
+
+		instance.getObjectAsync = async (name) => createdObjects[name] || null;
+		instance.setObjectNotExistsAsync = async (name, obj) => {
+			createdObjects[name] = obj;
+			instance.knownObjects.set(name, obj);
+		};
+		instance.extendObject = async (name, changes) => {
+			extendCalls.push({ name, changes });
+			const obj = createdObjects[name];
+			if (obj) {
+				obj.common = { ...obj.common, ...changes.common };
+			}
+		};
+		instance.setStateChangedAsync = async (name, state) => {
+			stateValues[name] = state.val;
+		};
+
+		return { instance, extendCalls, createdObjects, stateValues };
+	}
+
+	it("number → null → number: type stays number, no extra extendObject", async () => {
+		const { instance, extendCalls, createdObjects, stateValues } = createStatefulInstance();
+
+		await instance.doState("vitals.grid_v", 230, "Grid voltage", "V", false);
+		assert.equal(createdObjects["vitals.grid_v"].common.type, "number");
+		const callsAfterCreate = extendCalls.length;
+
+		await instance.doState("vitals.grid_v", null, "Grid voltage", "V", false);
+		assert.equal(stateValues["vitals.grid_v"], null);
+		assert.equal(createdObjects["vitals.grid_v"].common.type, "number");
+		assert.equal(extendCalls.length, callsAfterCreate);
+
+		await instance.doState("vitals.grid_v", 231, "Grid voltage", "V", false);
+		assert.equal(stateValues["vitals.grid_v"], 231);
+		assert.equal(createdObjects["vitals.grid_v"].common.type, "number");
+		assert.equal(extendCalls.length, callsAfterCreate);
+	});
+
+	it("null → number → null → number: creates as mixed, upgrades once", async () => {
+		const { instance, extendCalls, createdObjects, stateValues } = createStatefulInstance();
+
+		await instance.doState("vitals.grid_v", null, "Grid voltage", "V", false);
+		assert.equal(createdObjects["vitals.grid_v"].common.type, "mixed");
+		assert.equal(stateValues["vitals.grid_v"], null);
+
+		await instance.doState("vitals.grid_v", 230, "Grid voltage", "V", false);
+		assert.equal(createdObjects["vitals.grid_v"].common.type, "number");
+		assert.equal(stateValues["vitals.grid_v"], 230);
+		const callsAfterUpgrade = extendCalls.length;
+
+		await instance.doState("vitals.grid_v", null, "Grid voltage", "V", false);
+		assert.equal(createdObjects["vitals.grid_v"].common.type, "number");
+		assert.equal(stateValues["vitals.grid_v"], null);
+		assert.equal(extendCalls.length, callsAfterUpgrade);
+
+		await instance.doState("vitals.grid_v", 231, "Grid voltage", "V", false);
+		assert.equal(createdObjects["vitals.grid_v"].common.type, "number");
+		assert.equal(stateValues["vitals.grid_v"], 231);
+		assert.equal(extendCalls.length, callsAfterUpgrade);
+	});
+
+	it("string → null → string: type stays string", async () => {
+		const { instance, extendCalls, createdObjects, stateValues } = createStatefulInstance();
+
+		await instance.doState("version.firmware_version", "1.0.0", "Firmware", "", false);
+		assert.equal(createdObjects["version.firmware_version"].common.type, "string");
+		const callsAfterCreate = extendCalls.length;
+
+		await instance.doState("version.firmware_version", null, "Firmware", "", false);
+		assert.equal(stateValues["version.firmware_version"], null);
+		assert.equal(createdObjects["version.firmware_version"].common.type, "string");
+		assert.equal(extendCalls.length, callsAfterCreate);
+
+		await instance.doState("version.firmware_version", "1.0.1", "Firmware", "", false);
+		assert.equal(stateValues["version.firmware_version"], "1.0.1");
+		assert.equal(createdObjects["version.firmware_version"].common.type, "string");
+		assert.equal(extendCalls.length, callsAfterCreate);
+	});
+
+	it("repeated null: no extra extendObject calls after creation", async () => {
+		const { instance, extendCalls, createdObjects } = createStatefulInstance();
+
+		await instance.doState("vitals.grid_v", null, "Grid voltage", "V", false);
+		assert.equal(createdObjects["vitals.grid_v"].common.type, "mixed");
+		const callsAfterCreate = extendCalls.length;
+
+		for (let i = 0; i < 5; i++) {
+			await instance.doState("vitals.grid_v", null, "Grid voltage", "V", false);
+		}
+		assert.equal(extendCalls.length, callsAfterCreate);
+	});
+
+	it("repaired nan → finite → nan: simulates real firmware cycle", async () => {
+		const { instance, extendCalls, createdObjects, stateValues } = createStatefulInstance();
+		instance.cleanupArrayChildren = async () => {};
+
+		const response1 = t.decodeTeslaResponse('{"evse_state": 1, "grid_v": nan}', "vitals");
+		assert.equal(response1.grid_v, null);
+
+		await instance.doState("vitals.grid_v", response1.grid_v, "Grid voltage", "V", false);
+		assert.equal(createdObjects["vitals.grid_v"].common.type, "mixed");
+
+		await instance.doState("vitals.grid_v", 230.5, "Grid voltage", "V", false);
+		assert.equal(createdObjects["vitals.grid_v"].common.type, "number");
+		assert.equal(stateValues["vitals.grid_v"], 230.5);
+		const callsAfterUpgrade = extendCalls.length;
+
+		const response2 = t.decodeTeslaResponse('{"evse_state": 1, "grid_v": nan}', "vitals");
+		await instance.doState("vitals.grid_v", response2.grid_v, "Grid voltage", "V", false);
+		assert.equal(createdObjects["vitals.grid_v"].common.type, "number");
+		assert.equal(stateValues["vitals.grid_v"], null);
+		assert.equal(extendCalls.length, callsAfterUpgrade);
+	});
+
+	it("preserves DB type when cache is cold (post-restart)", async () => {
+		const { instance, extendCalls, createdObjects } = createStatefulInstance();
+
+		await instance.doState("vitals.grid_v", 230, "Grid voltage", "V", false);
+		assert.equal(createdObjects["vitals.grid_v"].common.type, "number");
+		const callsAfterCreate = extendCalls.length;
+
+		instance.knownObjects.clear();
+
+		await instance.doState("vitals.grid_v", null, "Grid voltage", "V", false);
+		assert.equal(createdObjects["vitals.grid_v"].common.type, "number");
+		assert.equal(extendCalls.length, callsAfterCreate);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// repairBareNan: Infinity handling
+// ---------------------------------------------------------------------------
+describe("repairBareNan: Infinity handling", () => {
+	it("replaces bare Infinity as object value", () => {
+		assert.equal(t.repairBareNan('{"v": Infinity}'), '{"v": null}');
+	});
+
+	it("replaces bare -Infinity as object value", () => {
+		assert.equal(t.repairBareNan('{"v": -Infinity}'), '{"v": null}');
+	});
+
+	it("replaces bare +Infinity as object value", () => {
+		assert.equal(t.repairBareNan('{"v": +Infinity}'), '{"v": null}');
+	});
+
+	it("replaces Infinity in array", () => {
+		assert.equal(t.repairBareNan("[Infinity, -Infinity]"), "[null, null]");
+	});
+
+	it("replaces case-insensitive INFINITY", () => {
+		assert.equal(t.repairBareNan('{"v": INFINITY}'), '{"v": null}');
+		assert.equal(t.repairBareNan('{"v": infinity}'), '{"v": null}');
+	});
+
+	it("replaces case-insensitive -INFINITY", () => {
+		assert.equal(t.repairBareNan('{"v": -INFINITY}'), '{"v": null}');
+	});
+
+	it("does not replace Infinity inside strings", () => {
+		const input = '{"val": "Infinity"}';
+		assert.equal(t.repairBareNan(input), input);
+	});
+
+	it("does not replace -Infinity inside strings", () => {
+		const input = '{"val": "-Infinity"}';
+		assert.equal(t.repairBareNan(input), input);
+	});
+
+	it("does not replace Infinity as object key", () => {
+		const input = "{Infinity: 1}";
+		assert.equal(t.repairBareNan(input), input);
+	});
+
+	it("handles mixed nan and Infinity", () => {
+		assert.equal(
+			t.repairBareNan('{"a": nan, "b": Infinity, "c": -Infinity}'),
+			'{"a": null, "b": null, "c": null}',
+		);
+	});
+
+	it("handles Infinity at structural boundaries", () => {
+		assert.equal(t.repairBareNan('{"a":Infinity}'), '{"a":null}');
+		assert.equal(t.repairBareNan('{"a":-Infinity}'), '{"a":null}');
+		assert.equal(t.repairBareNan('[Infinity]'), '[null]');
+	});
+
+	it("preserves Infinity-containing strings alongside bare Infinity", () => {
+		assert.equal(
+			t.repairBareNan('{"desc": "value is Infinity", "v": Infinity}'),
+			'{"desc": "value is Infinity", "v": null}',
+		);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// decodeTeslaResponse: Infinity integration
+// ---------------------------------------------------------------------------
+describe("decodeTeslaResponse: Infinity handling", () => {
+	it("repairs bare Infinity in response", () => {
+		const obj = t.decodeTeslaResponse('{"evse_state": 1, "grid_v": Infinity}', "vitals");
+		assert.deepEqual(obj, { evse_state: 1, grid_v: null });
+	});
+
+	it("repairs bare -Infinity in response", () => {
+		const obj = t.decodeTeslaResponse('{"evse_state": 1, "grid_v": -Infinity}', "vitals");
+		assert.deepEqual(obj, { evse_state: 1, grid_v: null });
+	});
+
+	it("repairs mixed nan and Infinity", () => {
+		const obj = t.decodeTeslaResponse(
+			'{"evse_state": nan, "grid_v": Infinity}',
+			"vitals",
+		);
+		assert.deepEqual(obj, { evse_state: null, grid_v: null });
+	});
+});
+
+// ---------------------------------------------------------------------------
+// connection loss forces complete refresh
+// ---------------------------------------------------------------------------
+describe("connection loss refresh", () => {
+	it("clears lastFetch on transition from connected to disconnected", async () => {
+		const instance = createInstance();
+		instance.url = "http://192.168.1.100/api/1/";
+		instance.connected = true;
+		instance.lastFetch = {
+			vitals: Date.now(),
+			lifetime: Date.now(),
+			wifi_status: Date.now(),
+			version: Date.now(),
+		};
+
+		instance.doGet = async () => {
+			throw new Error("fail");
+		};
+		instance.setNextPoll = () => ({});
+
+		await instance.readTeslaWC3();
+
+		assert.deepEqual(instance.lastFetch, {});
+		assert.equal(instance.connected, false);
+	});
+
+	it("does not clear lastFetch when already disconnected", async () => {
+		const instance = createInstance();
+		instance.url = "http://192.168.1.100/api/1/";
+		instance.connected = false;
+		instance.retry = 1;
+		instance.lastFetch = {};
+		instance.lastFetch.marker = "should survive";
+
+		instance.doGet = async () => {
+			throw new Error("fail");
+		};
+		instance.setNextPoll = () => ({});
+
+		await instance.readTeslaWC3();
+
+		assert.equal(instance.lastFetch.marker, "should survive");
+	});
+
+	it("recovery after loss polls all endpoints", async () => {
+		const instance = createInstance();
+		instance.url = "http://192.168.1.100/api/1/";
+		instance.connected = true;
+		instance.lastFetch = {
+			vitals: Date.now(),
+			lifetime: Date.now(),
+			wifi_status: Date.now(),
+			version: Date.now(),
+		};
+
+		let failOnce = true;
+		const polledEndpoints = [];
+
+		instance.doGet = async (url) => {
+			if (failOnce) {
+				failOnce = false;
+				throw new Error("fail");
+			}
+			const ep = url.split("/").pop();
+			polledEndpoints.push(ep);
+			if (ep === "vitals") return '{"evse_state": 1, "grid_v": 230}';
+			if (ep === "lifetime") return '{"uptime_s": 1000, "energy_wh": 5000}';
+			if (ep === "wifi_status") return '{"wifi_ssid": "test", "wifi_connected": true}';
+			if (ep === "version") return '{"firmware_version": "1.0", "serial_number": "ABC"}';
+			throw new Error("unknown");
+		};
+		instance.setNextPoll = () => ({});
+
+		await instance.readTeslaWC3();
+		assert.equal(instance.connected, false);
+
+		await instance.readTeslaWC3();
+		assert.equal(instance.connected, true);
+		assert.deepEqual(polledEndpoints.sort(), ["lifetime", "version", "vitals", "wifi_status"]);
+	});
+
+	it("normal connected polling preserves lastFetch rate limiting", async () => {
+		const instance = createInstance();
+		instance.url = "http://192.168.1.100/api/1/";
+		instance.connected = true;
+		instance.retry = 0;
+
+		const now = Date.now();
+		instance.lastFetch = {
+			vitals: now - 11000,
+			lifetime: now - 30000,
+			wifi_status: now - 30000,
+			version: now - 1800000,
+		};
+
+		const polledEndpoints = [];
+		instance.doGet = async (url) => {
+			const ep = url.split("/").pop();
+			polledEndpoints.push(ep);
+			if (ep === "vitals") return '{"evse_state": 1, "grid_v": 230}';
+			throw new Error("unexpected");
+		};
+		instance.setNextPoll = () => ({});
+
+		await instance.readTeslaWC3();
+
+		assert.deepEqual(polledEndpoints, ["vitals"]);
+		assert.ok(instance.lastFetch.lifetime > 0);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// ARRAY_CHILD_CLEANUP_LIMIT
+// ---------------------------------------------------------------------------
+describe("ARRAY_CHILD_CLEANUP_LIMIT", () => {
+	it("is exported and equals 100", () => {
+		assert.equal(t.ARRAY_CHILD_CLEANUP_LIMIT, 100);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// evalPoll edge paths
+// ---------------------------------------------------------------------------
+describe("evalPoll edge paths", () => {
+	it("returns silently when unloaded", async () => {
+		const instance = createInstance();
+		instance.unloaded = true;
+		let doStateCalled = false;
+		instance.doState = async () => {
+			doStateCalled = true;
+		};
+
+		await instance.evalPoll({ evse_state: 1, grid_v: 230 }, "vitals");
+		assert.equal(doStateCalled, false);
+	});
+
+	it("warns and returns on non-object input", async () => {
+		const instance = createInstance();
+		const warnings = [];
+		instance.log.warn = (msg) => warnings.push(msg);
+
+		await instance.evalPoll(null, "vitals");
+		assert.ok(warnings.some((m) => m.includes("Unexpected response")));
+
+		await instance.evalPoll("string", "vitals");
+		assert.ok(warnings.length >= 2);
+	});
+
+	it("warns and returns on array input", async () => {
+		const instance = createInstance();
+		const warnings = [];
+		instance.log.warn = (msg) => warnings.push(msg);
+
+		await instance.evalPoll([1, 2, 3], "vitals");
+		assert.ok(warnings.some((m) => m.includes("Unexpected response")));
+	});
+
+	it("skips VARIABLE_NOT_FOUND values", async () => {
+		const instance = createInstance();
+		const states = {};
+		instance.doState = async (name, value) => {
+			states[name] = value;
+		};
+		instance.cleanupArrayChildren = async () => {};
+
+		await instance.evalPoll(
+			{ evse_state: 1, grid_v: "VARIABLE_NOT_FOUND" },
+			"vitals",
+		);
+		assert.ok("vitals.evse_state" in states);
+		assert.ok(!("vitals.grid_v" in states));
+	});
+
+	it("skips OBJECT_NOT_FOUND keys", async () => {
+		const instance = createInstance();
+		const states = {};
+		instance.doState = async (name, value) => {
+			states[name] = value;
+		};
+		instance.cleanupArrayChildren = async () => {};
+
+		await instance.evalPoll(
+			{ evse_state: 1, OBJECT_NOT_FOUND: "something" },
+			"vitals",
+		);
+		assert.ok("vitals.evse_state" in states);
+		assert.ok(!("vitals.OBJECT_NOT_FOUND" in states));
+	});
+
+	it("skips nested objects", async () => {
+		const instance = createInstance();
+		const states = {};
+		const debugMsgs = [];
+		instance.log.debug = (msg) => debugMsgs.push(msg);
+		instance.doState = async (name, value) => {
+			states[name] = value;
+		};
+		instance.cleanupArrayChildren = async () => {};
+
+		await instance.evalPoll(
+			{ evse_state: 1, grid_v: 230, nested: { a: 1, b: 2 } },
+			"vitals",
+		);
+		assert.ok("vitals.evse_state" in states);
+		assert.ok("vitals.grid_v" in states);
+		assert.ok(!("vitals.nested" in states));
+		assert.ok(debugMsgs.some((m) => m.includes("Skipping nested object")));
+	});
+
+	it("publishes array parent as JSON string", async () => {
+		const instance = createInstance();
+		const states = {};
+		instance.doState = async (name, value) => {
+			states[name] = value;
+		};
+		instance.cleanupArrayChildren = async () => {};
+
+		await instance.evalPoll({ current_alerts: [1, 2] }, "vitals");
+		assert.equal(states["vitals.current_alerts"], "[1,2]");
+		assert.equal(typeof states["vitals.current_alerts"], "string");
+	});
+
+	it("continues processing after persistence failure in doState", async () => {
+		const instance = createInstance();
+		const states = {};
+		let callCount = 0;
+		instance.log.error = () => {};
+		instance.getObjectAsync = async () => null;
+		instance.setObjectNotExistsAsync = async () => {
+			if (callCount === 0) {
+				callCount++;
+				throw new Error("DB error");
+			}
+			callCount++;
+		};
+		instance.setStateChangedAsync = async (name, state) => {
+			states[name] = state.val;
+		};
+		instance.cleanupArrayChildren = async () => {};
+
+		await instance.evalPoll({ evse_state: 1, grid_v: 230 }, "vitals");
+		assert.ok(callCount >= 2);
+	});
+
+	it("calculates power only for vitals endpoint", async () => {
+		const instance = createInstance();
+		const states = {};
+		instance.doState = async (name, value) => {
+			states[name] = value;
+		};
+		instance.cleanupArrayChildren = async () => {};
+
+		await instance.evalPoll(
+			{ evse_state: 1, grid_v: 230, voltageA_v: 230, currentA_a: 10 },
+			"vitals",
+		);
+		assert.ok("vitals.power_w" in states);
+
+		const states2 = {};
+		instance.doState = async (name, value) => {
+			states2[name] = value;
+		};
+		await instance.evalPoll({ uptime_s: 1000, energy_wh: 5000 }, "lifetime");
+		assert.ok(!("vitals.power_w" in states2));
+		assert.ok(!("lifetime.power_w" in states2));
+	});
+
+	it("stops iteration when unloaded mid-loop", async () => {
+		const instance = createInstance();
+		const states = {};
+		let callCount = 0;
+		instance.doState = async (name, value) => {
+			callCount++;
+			states[name] = value;
+			if (callCount === 1) {
+				instance.unloaded = true;
+			}
+		};
+		instance.cleanupArrayChildren = async () => {};
+
+		await instance.evalPoll(
+			{ evse_state: 1, grid_v: 230, vehicle_connected: true },
+			"vitals",
+		);
+		assert.equal(callCount, 1);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// doDecode edge paths
+// ---------------------------------------------------------------------------
+describe("doDecode edge paths", () => {
+	it("returns known translation for mapped value", async () => {
+		const instance = createInstance();
+		instance.langState = "en";
+		const states = {};
+		instance.doState = async (name, value) => {
+			states[name] = value;
+		};
+
+		await instance.doDecode("vitals.evse_state", 0);
+		assert.equal(states["vitals.evse_state_Text"], "booting");
+	});
+
+	it("returns (unknown) for unmapped value", async () => {
+		const instance = createInstance();
+		instance.langState = "en";
+		const states = {};
+		instance.doState = async (name, value) => {
+			states[name] = value;
+		};
+
+		await instance.doDecode("vitals.evse_state", 99);
+		assert.equal(states["vitals.evse_state_Text"], "(unknown)");
+	});
+
+	it("falls back to English when system language has no translation", async () => {
+		const instance = createInstance();
+		instance.langState = "fr";
+		const states = {};
+		instance.doState = async (name, value) => {
+			states[name] = value;
+		};
+
+		await instance.doDecode("vitals.evse_state", 1);
+		assert.equal(states["vitals.evse_state_Text"], "idle");
+	});
+
+	it("does not create _Text state for untranslated keys", async () => {
+		const instance = createInstance();
+		instance.langState = "en";
+		let called = false;
+		instance.doState = async () => {
+			called = true;
+		};
+
+		await instance.doDecode("vitals.grid_v", 230);
+		assert.equal(called, false);
+	});
+
+	it("does not create _Text state for _Text input", async () => {
+		const instance = createInstance();
+		instance.langState = "en";
+		let called = false;
+		instance.doState = async () => {
+			called = true;
+		};
+
+		await instance.doDecode("vitals.evse_state_Text", "idle");
+		assert.equal(called, false);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// translation and metadata alignment
+// ---------------------------------------------------------------------------
+describe("translation and metadata alignment", () => {
+	const state_trans = require("./lib/state_trans.js");
+
+	it("every translated state key maps to a supported state in state_attr", () => {
+		for (const transKey of Object.keys(state_trans)) {
+			const baseKey = transKey.substring(0, transKey.lastIndexOf("."));
+			assert.ok(
+				state_attr[baseKey] !== undefined,
+				`state_trans key "${transKey}" has no matching state_attr entry for "${baseKey}"`,
+			);
+		}
+	});
+
+	it("translated states have both English and German entries", () => {
+		const translatedStates = new Set();
+		for (const key of Object.keys(state_trans)) {
+			const baseKey = key.substring(0, key.lastIndexOf("."));
+			translatedStates.add(baseKey);
+		}
+
+		for (const baseKey of translatedStates) {
+			assert.ok(
+				state_trans[`${baseKey}.en`] !== undefined,
+				`Missing English translation for ${baseKey}`,
+			);
+			assert.ok(
+				state_trans[`${baseKey}.de`] !== undefined,
+				`Missing German translation for ${baseKey}`,
+			);
+		}
+	});
+
+	it("state_attr _Text entries correspond to a translated state", () => {
+		for (const key of Object.keys(state_attr)) {
+			if (!key.endsWith("_Text")) continue;
+			const baseKey = key.replace(/_Text$/, "");
+			const hasTranslation = Object.keys(state_trans).some((k) => k.startsWith(`${baseKey}.`));
+			assert.ok(hasTranslation, `state_attr "${key}" has no matching state_trans entries for "${baseKey}"`);
+		}
+	});
+
+	it("EN and DE translation tables have the same keys", () => {
+		for (const key of Object.keys(state_trans)) {
+			if (!key.endsWith(".en")) continue;
+			const deKey = key.replace(/\.en$/, ".de");
+			assert.ok(state_trans[deKey] !== undefined, `Missing DE table for ${key}`);
+			const enKeys = Object.keys(state_trans[key]).sort();
+			const deKeys = Object.keys(state_trans[deKey]).sort();
+			assert.deepEqual(enKeys, deKeys, `Key mismatch between ${key} and ${deKey}`);
+		}
+	});
+});

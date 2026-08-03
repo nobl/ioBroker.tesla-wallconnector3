@@ -7,6 +7,10 @@ const state_trans = require(`${__dirname}/lib/state_trans.js`);
 
 const POLL_ENDPOINTS = ["version", "lifetime", "wifi_status", "vitals"];
 
+// Defensive upper bound for scanning stale numeric child states during array cleanup.
+// Prevents unbounded iteration if the object tree has unexpected content.
+const ARRAY_CHILD_CLEANUP_LIMIT = 100;
+
 const ENDPOINT_MIN_INTERVALS = {
 	vitals: 0,
 	lifetime: 60000,
@@ -276,6 +280,9 @@ class TeslaWallconnector3 extends utils.Adapter {
 				return;
 			}
 
+			if (this.connected) {
+				this.lastFetch = {};
+			}
 			this.connected = false;
 			this.setState("info.connection", false, true);
 
@@ -346,13 +353,10 @@ class TeslaWallconnector3 extends utils.Adapter {
 		}
 
 		this.log.silly(`(doState) Update: ${name}: ${value}`);
-		const valueType = value === null ? "mixed" : typeof value;
 		if (typeof value === "object" && value !== null) {
 			this.log.debug(`(doState) Skipping non-primitive value for ${name}: ${JSON.stringify(value)}`);
 			return;
 		}
-
-		const role = state_attr[name]?.role || guessRole(valueType, write);
 
 		try {
 			let obj = this.knownObjects.get(name);
@@ -362,6 +366,9 @@ class TeslaWallconnector3 extends utils.Adapter {
 					this.knownObjects.set(name, obj);
 				}
 			}
+
+			const valueType = value === null ? obj?.common?.type || "mixed" : typeof value;
+			const role = state_attr[name]?.role || guessRole(valueType, write);
 
 			if (obj) {
 				obj.common = obj.common || {};
@@ -506,7 +513,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	 */
 	async cleanupArrayChildren(key, currentLength) {
 		let i = currentLength;
-		while (i < currentLength + 100) {
+		while (i < currentLength + ARRAY_CHILD_CLEANUP_LIMIT) {
 			if (this.unloaded) {
 				return;
 			}
@@ -633,11 +640,12 @@ function decodeTeslaResponse(rawText, endpoint) {
 }
 
 /**
- * Replaces bare case-insensitive nan tokens with null, only outside JSON strings
- * and only in value positions (after : , or [).
+ * Replaces bare non-finite tokens (nan, Infinity, -Infinity, +Infinity) with null,
+ * only outside JSON strings and only in value positions (after : , or [).
+ * All matching is case-insensitive.
  *
  * @param {string} text - the raw JSON-like text
- * @returns {string} the text with bare nan tokens replaced by null
+ * @returns {string} the text with bare non-finite tokens replaced by null
  */
 function repairBareNan(text) {
 	const len = text.length;
@@ -684,6 +692,42 @@ function repairBareNan(text) {
 			if ((prev === ":" || prev === "," || prev === "[") && (next === "" || ",}] \t\n\r".includes(next))) {
 				result += "null";
 				i += 3;
+				continue;
+			}
+		}
+
+		if (
+			(text[i] === "I" || text[i] === "i") &&
+			i + 8 <= len &&
+			text.substring(i, i + 8).toLowerCase() === "infinity"
+		) {
+			let p = i - 1;
+			while (p >= 0 && " \t\n\r".includes(text[p])) {
+				p--;
+			}
+			const prev = p >= 0 ? text[p] : "";
+			const next = i + 8 < len ? text[i + 8] : "";
+			if ((prev === ":" || prev === "," || prev === "[") && (next === "" || ",}] \t\n\r".includes(next))) {
+				result += "null";
+				i += 8;
+				continue;
+			}
+		}
+
+		if (
+			(text[i] === "-" || text[i] === "+") &&
+			i + 9 <= len &&
+			text.substring(i + 1, i + 9).toLowerCase() === "infinity"
+		) {
+			let p = i - 1;
+			while (p >= 0 && " \t\n\r".includes(text[p])) {
+				p--;
+			}
+			const prev = p >= 0 ? text[p] : "";
+			const next = i + 9 < len ? text[i + 9] : "";
+			if ((prev === ":" || prev === "," || prev === "[") && (next === "" || ",}] \t\n\r".includes(next))) {
+				result += "null";
+				i += 9;
 				continue;
 			}
 		}
@@ -925,6 +969,7 @@ if (require.main !== module) {
 		validateHost,
 		ENDPOINT_MIN_INTERVALS,
 		EXPECTED_FIELDS,
+		ARRAY_CHILD_CLEANUP_LIMIT,
 	};
 } else {
 	new TeslaWallconnector3();

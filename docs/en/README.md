@@ -48,6 +48,15 @@ Live operational data, polled every interval.
 | voltageA_v, voltageB_v, voltageC_v | number | Voltage per phase (V) |
 | currentA_a, currentB_a, currentC_a, currentN_a | number | Current per phase (A) |
 | pcba_temp_c, mcu_temp_c, handle_temp_c | number | Temperature readings (°C) |
+| relay_coil_v | number | Relay coil voltage (V) |
+| relay_k1_v | number | Relay K1 voltage (V) |
+| relay_k2_v | number | Relay K2 voltage (V) |
+| prox_v | number | Proximity pilot voltage (V) |
+| pilot_high_v | number | Control pilot high voltage (V) |
+| pilot_low_v | number | Control pilot low voltage (V) |
+| input_thermopile_uv | number | Thermopile sensor reading |
+| config_status | number | Configuration status |
+| uptime_s | number | Wallbox uptime (s) |
 | current_alerts | string (JSON) | Active alerts as a JSON array (e.g. `"[]"`). Numeric child states (`.0`, `.1`, ...) are kept for backward compatibility and cleaned up automatically when the array shrinks. |
 | evse_not_ready_reasons | string (JSON) | Reasons the wallbox is not ready, as a JSON array. Child states like current_alerts. |
 

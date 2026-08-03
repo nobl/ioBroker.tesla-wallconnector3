@@ -48,6 +48,15 @@ Live-Betriebsdaten, bei jedem Abfrageintervall aktualisiert.
 | voltageA_v, voltageB_v, voltageC_v | number | Spannung pro Phase (V) |
 | currentA_a, currentB_a, currentC_a, currentN_a | number | Strom pro Phase (A) |
 | pcba_temp_c, mcu_temp_c, handle_temp_c | number | Temperaturwerte (°C) |
+| relay_coil_v | number | Relais-Spulenspannung (V) |
+| relay_k1_v | number | Relais K1 Spannung (V) |
+| relay_k2_v | number | Relais K2 Spannung (V) |
+| prox_v | number | Proximity-Pilot-Spannung (V) |
+| pilot_high_v | number | Control-Pilot High Spannung (V) |
+| pilot_low_v | number | Control-Pilot Low Spannung (V) |
+| input_thermopile_uv | number | Thermopile-Sensorwert |
+| config_status | number | Konfigurationsstatus |
+| uptime_s | number | Betriebszeit der Wallbox (s) |
 | current_alerts | string (JSON) | Aktive Alarme als JSON-Array (z. B. `"[]"`). Numerische Kind-Datenpunkte (`.0`, `.1`, ...) werden aus Kompatibilitätsgründen beibehalten und bei Verkleinerung des Arrays automatisch bereinigt. |
 | evse_not_ready_reasons | string (JSON) | Gründe für Nicht-Bereitschaft als JSON-Array. Kind-Datenpunkte wie bei current_alerts. |
 

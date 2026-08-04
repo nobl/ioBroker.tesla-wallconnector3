@@ -373,7 +373,9 @@ class TeslaWallconnector3 extends utils.Adapter {
 			let obj = this.knownObjects.get(name);
 			if (!obj) {
 				obj = await this.getObjectAsync(name);
-				if (this.unloaded) return;
+				if (this.unloaded) {
+					return;
+				}
 				if (obj) {
 					this.knownObjects.set(name, obj);
 				}
@@ -406,7 +408,9 @@ class TeslaWallconnector3 extends utils.Adapter {
 
 				if (Object.keys(newCommon).length > 0) {
 					await this.extendObject(name, { common: newCommon });
-					if (this.unloaded) return;
+					if (this.unloaded) {
+						return;
+					}
 					obj.common = { ...obj.common, ...newCommon };
 					this.knownObjects.set(name, obj);
 				}
@@ -424,7 +428,9 @@ class TeslaWallconnector3 extends utils.Adapter {
 					native: {},
 				};
 				await this.setObjectNotExistsAsync(name, obj);
-				if (this.unloaded) return;
+				if (this.unloaded) {
+					return;
+				}
 				this.knownObjects.set(name, obj);
 			}
 
@@ -434,7 +440,9 @@ class TeslaWallconnector3 extends utils.Adapter {
 			return;
 		}
 
-		if (this.unloaded) return;
+		if (this.unloaded) {
+			return;
+		}
 		await this.doDecode(name, value);
 	}
 

@@ -208,6 +208,25 @@ describe("valueTyping", () => {
 	it("converts scientific notation to numbers", () => {
 		assert.equal(t.valueTyping("unknown.key", "1e3"), 1000);
 	});
+
+	it("coerces null to 0 for numeric states with unit", () => {
+		assert.strictEqual(t.valueTyping("vitals.grid_v", null), 0);
+		assert.strictEqual(t.valueTyping("lifetime.energy_wh", null), 0);
+		assert.strictEqual(t.valueTyping("vitals.pcba_temp_c", null), 0);
+	});
+
+	it("coerces null to false for boolean states", () => {
+		assert.strictEqual(t.valueTyping("vitals.vehicle_connected", null), false);
+		assert.strictEqual(t.valueTyping("wifi_status.wifi_connected", null), false);
+	});
+
+	it("passes null through for unknown keys", () => {
+		assert.strictEqual(t.valueTyping("totally.unknown", null), null);
+	});
+
+	it("passes null through for states without unit or value role", () => {
+		assert.strictEqual(t.valueTyping("vitals.config_status", null), null);
+	});
 });
 
 // ---------------------------------------------------------------------------
@@ -292,24 +311,24 @@ describe("calcPowerValue", () => {
 		assert.equal(t.calcPowerValue(obj, false), 0);
 	});
 
-	it("returns null when voltage present but current missing", () => {
+	it("returns 0 when voltage present but current missing", () => {
 		const obj = { voltageA_v: 230 };
-		assert.equal(t.calcPowerValue(obj, false), null);
+		assert.equal(t.calcPowerValue(obj, false), 0);
 	});
 
-	it("returns null when current present but voltage missing", () => {
+	it("returns 0 when current present but voltage missing", () => {
 		const obj = { currentA_a: 10 };
-		assert.equal(t.calcPowerValue(obj, false), null);
+		assert.equal(t.calcPowerValue(obj, false), 0);
 	});
 
-	it("returns null for NaN input", () => {
+	it("returns 0 for NaN input", () => {
 		const obj = { voltageA_v: NaN, currentA_a: 10 };
-		assert.equal(t.calcPowerValue(obj, false), null);
+		assert.equal(t.calcPowerValue(obj, false), 0);
 	});
 
-	it("returns null for Infinity input", () => {
+	it("returns 0 for Infinity input", () => {
 		const obj = { voltageA_v: Infinity, currentA_a: 10 };
-		assert.equal(t.calcPowerValue(obj, false), null);
+		assert.equal(t.calcPowerValue(obj, false), 0);
 	});
 
 	it("handles negative values mathematically", () => {
@@ -317,13 +336,13 @@ describe("calcPowerValue", () => {
 		assert.equal(t.calcPowerValue(obj, false), -1150);
 	});
 
-	it("returns null when no phase data at all", () => {
-		assert.equal(t.calcPowerValue({}, false), null);
+	it("returns 0 when no phase data at all", () => {
+		assert.equal(t.calcPowerValue({}, false), 0);
 	});
 
-	it("returns null for non-numeric string values", () => {
+	it("returns 0 for non-numeric string values", () => {
 		const obj = { voltageA_v: "abc", currentA_a: 10 };
-		assert.equal(t.calcPowerValue(obj, false), null);
+		assert.equal(t.calcPowerValue(obj, false), 0);
 	});
 
 	it("calculates split-phase power", () => {
@@ -331,19 +350,19 @@ describe("calcPowerValue", () => {
 		assert.equal(t.calcPowerValue(obj, true), 7680);
 	});
 
-	it("returns null for split-phase with missing grid_v", () => {
+	it("returns 0 for split-phase with missing grid_v", () => {
 		const obj = { vehicle_current_a: 32 };
-		assert.equal(t.calcPowerValue(obj, true), null);
+		assert.equal(t.calcPowerValue(obj, true), 0);
 	});
 
-	it("returns null for split-phase with missing vehicle_current_a", () => {
+	it("returns 0 for split-phase with missing vehicle_current_a", () => {
 		const obj = { grid_v: 240 };
-		assert.equal(t.calcPowerValue(obj, true), null);
+		assert.equal(t.calcPowerValue(obj, true), 0);
 	});
 
-	it("returns null for split-phase with non-finite input", () => {
+	it("returns 0 for split-phase with non-finite input", () => {
 		const obj = { grid_v: NaN, vehicle_current_a: 32 };
-		assert.equal(t.calcPowerValue(obj, true), null);
+		assert.equal(t.calcPowerValue(obj, true), 0);
 	});
 
 	it("calculates split-phase zero power", () => {
@@ -525,6 +544,22 @@ describe("repairBareNan", () => {
 
 	it("returns valid JSON unchanged", () => {
 		const input = '{"a": 1, "b": "hello"}';
+		assert.equal(t.repairBareNan(input), input);
+	});
+
+	it("replaces signed nan values", () => {
+		assert.equal(t.repairBareNan('{"v": -nan}'), '{"v": null}');
+		assert.equal(t.repairBareNan('{"v": +nan}'), '{"v": null}');
+		assert.equal(t.repairBareNan('{"v": -NAN}'), '{"v": null}');
+		assert.equal(t.repairBareNan('{"v": +NaN}'), '{"v": null}');
+	});
+
+	it("replaces signed nan in array", () => {
+		assert.equal(t.repairBareNan("[-nan, +nan]"), "[null, null]");
+	});
+
+	it("does not replace signed nan inside strings", () => {
+		const input = '{"val": "-nan"}';
 		assert.equal(t.repairBareNan(input), input);
 	});
 });
@@ -876,6 +911,82 @@ describe("retry logic", () => {
 		await instance.readTeslaWC3();
 
 		assert.equal(instance.connected, false);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// connection gate (vitals required)
+// ---------------------------------------------------------------------------
+describe("connection gate", () => {
+	it("does not set connected when vitals fails but version succeeds", async () => {
+		const instance = createInstance();
+		instance.url = "http://192.168.1.100/api/1/";
+
+		const connectionStates = [];
+		instance.setState = (id, val) => {
+			if (id === "info.connection") connectionStates.push(val);
+		};
+
+		instance.doGet = async (url) => {
+			const ep = url.split("/").pop();
+			if (ep === "vitals") throw new Error("timeout");
+			if (ep === "lifetime") return '{"uptime_s": 1000, "energy_wh": 5000}';
+			if (ep === "wifi_status") return '{"wifi_ssid": "dGVzdA==", "wifi_connected": true}';
+			if (ep === "version") return '{"firmware_version": "1.0", "serial_number": "ABC"}';
+			throw new Error("unknown");
+		};
+
+		instance.setNextPoll = () => ({});
+
+		await instance.readTeslaWC3();
+
+		assert.equal(instance.connected, false);
+		assert.ok(!connectionStates.includes(true));
+	});
+
+	it("sets connected when vitals succeeds", async () => {
+		const instance = createInstance();
+		instance.url = "http://192.168.1.100/api/1/";
+
+		instance.doGet = async (url) => {
+			const ep = url.split("/").pop();
+			if (ep === "vitals") return '{"evse_state": 1, "grid_v": 230}';
+			if (ep === "lifetime") return '{"uptime_s": 1000, "energy_wh": 5000}';
+			if (ep === "wifi_status") return '{"wifi_ssid": "dGVzdA==", "wifi_connected": true}';
+			if (ep === "version") return '{"firmware_version": "1.0", "serial_number": "ABC"}';
+			throw new Error("unknown");
+		};
+
+		instance.setNextPoll = () => ({});
+
+		await instance.readTeslaWC3();
+
+		assert.equal(instance.connected, true);
+	});
+
+	it("marks disconnected when vitals fails after previous connection", async () => {
+		const instance = createInstance();
+		instance.url = "http://192.168.1.100/api/1/";
+		instance.connected = true;
+
+		const connectionStates = [];
+		instance.setState = (id, val) => {
+			if (id === "info.connection") connectionStates.push(val);
+		};
+
+		instance.doGet = async (url) => {
+			const ep = url.split("/").pop();
+			if (ep === "vitals") throw new Error("timeout");
+			if (ep === "version") return '{"firmware_version": "1.0", "serial_number": "ABC"}';
+			throw new Error("fail");
+		};
+
+		instance.setNextPoll = () => ({});
+
+		await instance.readTeslaWC3();
+
+		assert.equal(instance.connected, false);
+		assert.ok(connectionStates.includes(false));
 	});
 });
 
@@ -1542,6 +1653,23 @@ describe("calcPower bridge", () => {
 		assert.ok(Number(states["vitals.power_w"]) > 0);
 	});
 
+	it("publishes power_w as 0 when inputs are missing", async () => {
+		const instance = createInstance();
+		const states = {};
+		instance.doState = async (name, value) => {
+			states[name] = value;
+		};
+		instance.cleanupArrayChildren = async () => {};
+
+		await instance.evalPoll(
+			{ evse_state: 1, grid_v: 230 },
+			"vitals",
+		);
+
+		assert.ok("vitals.power_w" in states);
+		assert.strictEqual(states["vitals.power_w"], 0);
+	});
+
 	it("does not create power_w for non-vitals endpoints", async () => {
 		const instance = createInstance();
 		const states = {};
@@ -2075,6 +2203,15 @@ describe("connection loss refresh", () => {
 describe("ARRAY_CHILD_CLEANUP_LIMIT", () => {
 	it("is exported and equals 100", () => {
 		assert.equal(t.ARRAY_CHILD_CLEANUP_LIMIT, 100);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// MAX_RETRY_DELAY_MS
+// ---------------------------------------------------------------------------
+describe("MAX_RETRY_DELAY_MS", () => {
+	it("is exported and equals 3600000", () => {
+		assert.equal(t.MAX_RETRY_DELAY_MS, 3600000);
 	});
 });
 

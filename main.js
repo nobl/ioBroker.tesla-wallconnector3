@@ -11,6 +11,9 @@ const POLL_ENDPOINTS = ["version", "lifetime", "wifi_status", "vitals"];
 // Prevents unbounded iteration if the object tree has unexpected content.
 const ARRAY_CHILD_CLEANUP_LIMIT = 100;
 
+// Cap on retry backoff delay to prevent indefinite wait times.
+const MAX_RETRY_DELAY_MS = 3600000; // 1 hour
+
 const ENDPOINT_MIN_INTERVALS = {
 	vitals: 0,
 	lifetime: 60000,
@@ -45,7 +48,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 		this.timer = null;
 		this.lastFetch = {};
 		this.abortController = null;
-		this.http = axios.create({ maxContentLength: 2 * 1024 * 1024, maxRedirects: 0 });
+		this.http = axios.create({ maxContentLength: 2 * 1024 * 1024, maxRedirects: 0, proxy: false });
 
 		this.on("ready", this.onReady.bind(this));
 		this.on("unload", this.onUnload.bind(this));
@@ -225,6 +228,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 
 			let hasSuccess = false;
 			let hasRejected = false;
+			let vitalsSuccess = false;
 
 			for (const key of endpointsToPoll) {
 				if (this.unloaded) {
@@ -236,6 +240,9 @@ class TeslaWallconnector3 extends utils.Adapter {
 					const obj = decodeTeslaResponse(rawText, key);
 					await this.evalPoll(obj, key);
 					hasSuccess = true;
+					if (key === "vitals") {
+						vitalsSuccess = true;
+					}
 					this.lastFetch[key] = Date.now();
 				} catch (error) {
 					if (this.unloaded) {
@@ -262,14 +269,19 @@ class TeslaWallconnector3 extends utils.Adapter {
 				return;
 			}
 
-			if (this.retry > 0) {
-				this.log.info(`Connection to Tesla Wall Connector Gen 3 (${this.config.teslawb3ip}) restored.`);
-			} else if (!this.connected) {
-				this.log.info(`connected to Tesla Wall Connector Gen 3: ${this.config.teslawb3ip}`);
+			if (vitalsSuccess) {
+				if (this.retry > 0) {
+					this.log.info(`Connection to Tesla Wall Connector Gen 3 (${this.config.teslawb3ip}) restored.`);
+				} else if (!this.connected) {
+					this.log.info(`connected to Tesla Wall Connector Gen 3: ${this.config.teslawb3ip}`);
+				}
+				this.connected = true;
+				this.retry = 0;
+				this.setState("info.connection", true, true);
+			} else if (this.connected) {
+				this.connected = false;
+				this.setState("info.connection", false, true);
 			}
-			this.connected = true;
-			this.retry = 0;
-			this.setState("info.connection", true, true);
 
 			if (this.unloaded) {
 				return;
@@ -307,7 +319,6 @@ class TeslaWallconnector3 extends utils.Adapter {
 				return;
 			}
 
-			const MAX_RETRY_DELAY_MS = 3600000; // 1 hour
 			const delayMs = Math.min(
 				this.config.interval * this.config.retrymultiplier * this.retry * 1000,
 				MAX_RETRY_DELAY_MS,
@@ -362,6 +373,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 			let obj = this.knownObjects.get(name);
 			if (!obj) {
 				obj = await this.getObjectAsync(name);
+				if (this.unloaded) return;
 				if (obj) {
 					this.knownObjects.set(name, obj);
 				}
@@ -394,6 +406,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 
 				if (Object.keys(newCommon).length > 0) {
 					await this.extendObject(name, { common: newCommon });
+					if (this.unloaded) return;
 					obj.common = { ...obj.common, ...newCommon };
 					this.knownObjects.set(name, obj);
 				}
@@ -411,6 +424,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 					native: {},
 				};
 				await this.setObjectNotExistsAsync(name, obj);
+				if (this.unloaded) return;
 				this.knownObjects.set(name, obj);
 			}
 
@@ -420,6 +434,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 			return;
 		}
 
+		if (this.unloaded) return;
 		await this.doDecode(name, value);
 	}
 
@@ -548,9 +563,6 @@ class TeslaWallconnector3 extends utils.Adapter {
 	 */
 	async calcPower(obj) {
 		const power = calcPowerValue(obj, !!this.config.splitPhase);
-		if (power === null) {
-			return;
-		}
 		const attr = state_attr["vitals.power_w"];
 		await this.doState(
 			"vitals.power_w",
@@ -732,6 +744,26 @@ function repairBareNan(text) {
 			}
 		}
 
+		if (
+			(text[i] === "-" || text[i] === "+") &&
+			i + 4 <= len &&
+			(text[i + 1] === "n" || text[i + 1] === "N") &&
+			(text[i + 2] === "a" || text[i + 2] === "A") &&
+			(text[i + 3] === "n" || text[i + 3] === "N")
+		) {
+			let p = i - 1;
+			while (p >= 0 && " \t\n\r".includes(text[p])) {
+				p--;
+			}
+			const prev = p >= 0 ? text[p] : "";
+			const next = i + 4 < len ? text[i + 4] : "";
+			if ((prev === ":" || prev === "," || prev === "[") && (next === "" || ",}] \t\n\r".includes(next))) {
+				result += "null";
+				i += 4;
+				continue;
+			}
+		}
+
 		result += text[i];
 		i++;
 	}
@@ -827,14 +859,14 @@ function validateHost(host) {
  *
  * @param {{ [s: string]: any }} obj - the vitals response
  * @param {boolean} splitPhase - true for North American split-phase calculation
- * @returns {number | null} the calculated power in watts, or null if insufficient data
+ * @returns {number} the calculated power in watts, or 0 if insufficient data
  */
 function calcPowerValue(obj, splitPhase) {
 	if (splitPhase) {
 		const gridV = Number(obj.grid_v);
 		const vehicleCurrent = Number(obj.vehicle_current_a);
 		if (!Number.isFinite(gridV) || !Number.isFinite(vehicleCurrent)) {
-			return null;
+			return 0;
 		}
 		return parseFloat((gridV * vehicleCurrent).toFixed(1));
 	}
@@ -856,13 +888,13 @@ function calcPowerValue(obj, splitPhase) {
 			continue;
 		}
 		if (!vPresent || !cPresent) {
-			return null;
+			return 0;
 		}
 
 		const v = Number(voltage);
 		const c = Number(current);
 		if (!Number.isFinite(v) || !Number.isFinite(c)) {
-			return null;
+			return 0;
 		}
 
 		hasCompletePhase = true;
@@ -870,7 +902,7 @@ function calcPowerValue(obj, splitPhase) {
 	}
 
 	if (!hasCompletePhase) {
-		return null;
+		return 0;
 	}
 	return parseFloat(power.toFixed(1));
 }
@@ -898,6 +930,17 @@ function guessRole(valueType, write) {
  * @returns {any} the typed value
  */
 function valueTyping(key, value) {
+	if (value === null) {
+		const attr = state_attr[key];
+		if (attr?.booltype) {
+			return false;
+		}
+		if (attr?.unit || (attr?.role && attr.role.startsWith("value."))) {
+			return 0;
+		}
+		return value;
+	}
+
 	if (typeof value === "string") {
 		const trimmed = value.trim();
 		if (trimmed !== "") {
@@ -970,6 +1013,7 @@ if (require.main !== module) {
 		ENDPOINT_MIN_INTERVALS,
 		EXPECTED_FIELDS,
 		ARRAY_CHILD_CLEANUP_LIMIT,
+		MAX_RETRY_DELAY_MS,
 	};
 } else {
 	new TeslaWallconnector3();

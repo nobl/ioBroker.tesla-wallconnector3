@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tesla-wallconnector3",
-    "version": "1.3.0",
+    "version": "1.3.1",
     "news": {
+      "1.3.1": {
+        "en": "Dependency updates",
+        "de": "Updates der Abhängigkeit",
+        "ru": "Обновления зависимостей",
+        "pt": "Atualizações de dependência",
+        "nl": "Afhankelijkheidsupdates",
+        "fr": "Mises à jour sur la dépendance",
+        "it": "Aggiornamenti di dipendenza",
+        "es": "Actualizaciones de dependencia",
+        "pl": "Aktualizacje zależności",
+        "uk": "Оновлення залежності",
+        "zh-cn": "依赖性更新"
+      },
       "1.3.0": {
         "en": "Added North American split-phase power calculation mode (splitPhase setting)\nAdded recovery for malformed wallbox responses (bare nan, Infinity, and truncated data)\nAdded address validation: clearer error messages for misconfigured wallbox addresses\nAdded 2 MiB response size limit\nFixed connection status flapping when the wallbox was partially reachable\nFixed charging power (power_w) sometimes showing a stale value after charging stops — now always 0 when not charging\nFixed handling of additional malformed sensor readings from certain firmware versions\nFixed unavailable sensor readings showing as empty instead of 0\nFixed state types sometimes changing unexpectedly, including after adapter restart\nFixed alerts and not-ready reasons not updating correctly when the list changes\nFixed all data refreshing immediately after connection loss recovery\nFixed retry count being off by one compared to the configured value\nFixed rare state updates still happening briefly after adapter shutdown\nFixed timeout help text showing wrong maximum (now correctly shows 10000 ms)\nFixed wallbox requests failing on systems with an HTTP proxy configured\nCorrected WiFi signal strength metadata\nFixed database errors no longer triggering unnecessary reconnection attempts\nReduced load on wallbox: version data polled hourly, WiFi and lifetime data every 60 seconds\nExpanded and corrected documentation",
         "de": "Nordamerikanischer Split-Phase-Leistungsberechnungsmodus hinzugefügt (SplitPhase-Einstellung)\nZusätzliche Fehlerbehebung für fehlerhafte Wallbox-Antworten (unbegrenzte NaN-Werte, Unendlich-Werte und abgeschnittene Daten)\nAdressvalidierung hinzugefügt: Klarere Fehlermeldungen für falsch konfigurierte Wallbox-Adressen\nDie Antwortgrößenbeschränkung wurde auf 2 MiB erhöht.\nDer Verbindungsstatus war nicht mehr korrekt, da die Wanddose nur teilweise erreichbar war.\nDie Anzeige der Ladeleistung (power_w) zeigte nach dem Ladevorgang manchmal einen veralteten Wert an – jetzt ist sie immer 0, wenn nicht geladen wird.\nBehebung des Problems mit zusätzlichen fehlerhaften Sensormesswerten aus bestimmten Firmware-Versionen\nBehoben: Nicht verfügbare Sensorwerte wurden fälschlicherweise als leer anstatt als 0 angezeigt.\nFeste Zustandstypen ändern sich manchmal unerwartet, auch nach einem Neustart des Adapters.\nBehoben: Warnmeldungen und Gründe für den Status „Nicht bereit“, die bei Listenänderungen nicht korrekt aktualisiert wurden.\nProblem behoben: Alle Daten werden nach Wiederherstellung der Verbindung sofort aktualisiert.\nDie Anzahl der Wiederholungsversuche war um eins vom konfigurierten Wert abgewichen.\nEs wurde ein seltener Zustandsaktualisierungsvorgang behoben, der nach dem Herunterfahren des Adapters noch kurzzeitig auftrat.\nDer Hilfetext zur Timeout-Einstellung wurde korrigiert, da er nun den falschen Maximalwert anzeigte (jetzt werden korrekt 10000 ms angezeigt).\nProblem behoben, das dazu führte, dass Wallbox-Anfragen auf Systemen mit konfiguriertem HTTP-Proxy fehlschlugen.\nKorrigierte Metadaten zur WLAN-Signalstärke\nDatenbankfehler wurden behoben, die keine unnötigen Wiederverbindungsversuche mehr auslösen.\nReduzierte Belastung der Wallbox: Versionsdaten werden stündlich abgefragt, WLAN- und Lebenszeitdaten alle 60 Sekunden.\nErweiterte und korrigierte Dokumentation",

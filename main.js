@@ -347,7 +347,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 
 	/**
 	 * @param {string} name - the state name
-	 * @param {any} value - the state value
+	 * @param {RawValue} value - the state value
 	 * @param {string} description - the state description
 	 * @param {string} unit - the unit
 	 * @param {boolean} write - whether the state is writable
@@ -448,7 +448,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 
 	/**
 	 * @param {string} name - the state name
-	 * @param {string | number} value - the state value
+	 * @param {ioBroker.StateValue} value - the state value
 	 */
 	async doDecode(name, value) {
 		if (name.endsWith("_Text")) {
@@ -467,7 +467,10 @@ class TeslaWallconnector3 extends utils.Adapter {
 				continue;
 			}
 
-			const trans = translationTable[value] !== undefined ? translationTable[value] : "(unknown)";
+			// String() mirrors the implicit key coercion a property access would do anyway,
+			// and keeps booleans and null usable as index types
+			const translated = translationTable[String(value)];
+			const trans = translated !== undefined ? translated : "(unknown)";
 			const desc = state_attr[`${key}_Text`] !== undefined ? state_attr[`${key}_Text`].name : key;
 			await this.doState(`${name}_Text`, trans, desc, "", false);
 			return;
@@ -475,7 +478,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	}
 
 	/**
-	 * @param {{ [s: string]: any; } | ArrayLike<any>} obj - the parsed endpoint response
+	 * @param {Record<string, RawValue>} obj - the parsed endpoint response
 	 * @param {string} key1 - the endpoint name
 	 */
 	async evalPoll(obj, key1) {
@@ -567,7 +570,7 @@ class TeslaWallconnector3 extends utils.Adapter {
 	/**
 	 * Calculates and publishes charging power from vitals data.
 	 *
-	 * @param {{ [s: string]: any }} obj - the vitals response object
+	 * @param {Record<string, RawValue>} obj - the vitals response object
 	 */
 	async calcPower(obj) {
 		const power = calcPowerValue(obj, !!this.config.splitPhase);
@@ -587,7 +590,7 @@ class TeslaWallconnector3 extends utils.Adapter {
  *
  * @param {string} rawText - the raw response body
  * @param {string} endpoint - the endpoint name for error messages
- * @returns {object} the parsed and validated response object
+ * @returns {Record<string, RawValue>} the parsed and validated response object
  */
 function decodeTeslaResponse(rawText, endpoint) {
 	if (typeof rawText !== "string") {
@@ -865,7 +868,7 @@ function validateHost(host) {
 /**
  * Calculates charging power from vitals data.
  *
- * @param {{ [s: string]: any }} obj - the vitals response
+ * @param {Record<string, RawValue>} obj - the vitals response
  * @param {boolean} splitPhase - true for North American split-phase calculation
  * @returns {number} the calculated power in watts, or 0 if insufficient data
  */
@@ -934,8 +937,8 @@ function guessRole(valueType, write) {
  * Converts a value based on type flags in state_attr for the given key.
  *
  * @param {string} key - the state key
- * @param {any} value - the raw value
- * @returns {any} the typed value
+ * @param {RawValue} value - the raw value
+ * @returns {RawValue} the typed value
  */
 function valueTyping(key, value) {
 	if (value === null) {
@@ -969,9 +972,9 @@ function valueTyping(key, value) {
 /**
  * Applies booltype conversion and multiply factor from state attribute metadata.
  *
- * @param {any} value - the value to process
- * @param {object} attr - the state attribute metadata
- * @returns {any} the processed value
+ * @param {RawValue} value - the value to process
+ * @param {StateAttr} attr - the state attribute metadata
+ * @returns {RawValue} the processed value
  */
 function applyTyping(value, attr) {
 	const isBool = !!attr?.booltype;

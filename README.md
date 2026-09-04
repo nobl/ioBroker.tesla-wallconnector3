@@ -68,7 +68,7 @@ Maintenance of this adapter can be quite time consuming. If you wish to thank th
   Placeholder for the next version (at the beginning of the line):
   ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 1.3.2 (2026-09-04)
 - Dependency updates
 
 ### 1.3.1 (2026-08-14)
@@ -113,9 +113,6 @@ Maintenance of this adapter can be quite time consuming. If you wish to thank th
 - Added state attributes (and moved notifications to debug from info)
 - Code optimization
 - Migration to i18n
-
-### 1.0.6 (NoBl)
-* Maintenance update (dependencies, ...)
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

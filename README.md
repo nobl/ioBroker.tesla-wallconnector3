@@ -69,6 +69,7 @@ Maintenance of this adapter can be quite time consuming. If you wish to thank th
   ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- Dependency updates
 
 ### 1.3.1 (2026-08-14)
 - Dependency updates

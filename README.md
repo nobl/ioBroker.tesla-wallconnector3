@@ -69,6 +69,7 @@ Maintenance of this adapter can be quite time consuming. If you wish to thank th
   ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- Added Node.js 26 to test matrix
 
 ### 1.3.2 (2026-09-04)
 - Dependency updates

@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tesla-wallconnector3",
-    "version": "1.3.2",
+    "version": "1.3.3",
     "news": {
+      "1.3.3": {
+        "en": "Added Node.js 26 to test matrix\nDependency updates",
+        "de": "Node.js 26 zur Testmatrix hinzugefügt\nUpdates zu Abhängigkeiten",
+        "ru": "Добавлен файл Node.js 26 в тестовую матрицу\nОбновления зависимостей",
+        "pt": "Adição do Node.js 26 à matriz\nAtualizações de dependência",
+        "nl": "Node.js 26 toegevoegd aan de testmatrix\nUpdates voor afhankelijkheden",
+        "fr": "Node.js 26 a été ajouté à Test Matrix\nMises à jour sur la dépendance",
+        "it": "Aggiunto Node.js 26 al test\nUpdate sulle dipendenze",
+        "es": "Añadió Node.js 26 a Test Matrix\nActualizaciones de dependencias",
+        "pl": "Dodano Node.js 26 do matrycy testowej\nAktualizacje zależności",
+        "uk": "Додано Node.js 26 до тестової матриці\nОновлення залежностей",
+        "zh-cn": "在测试矩阵中添加了 Node.js 26\n依赖关系更新"
+      },
       "1.3.2": {
         "en": "Dependency updates",
         "de": "Updates zu Abhängigkeiten",

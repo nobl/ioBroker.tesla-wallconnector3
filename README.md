@@ -68,6 +68,9 @@ Maintenance of this adapter can be quite time consuming. If you wish to thank th
   Placeholder for the next version (at the beginning of the line):
   ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- Dependency updates
+
 ### 1.3.3 (2026-09-12)
 - Added Node.js 26 to test matrix
 - Dependency updates

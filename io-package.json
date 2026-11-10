@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tesla-wallconnector3",
-    "version": "1.3.4",
+    "version": "1.3.5",
     "news": {
+      "1.3.5": {
+        "en": "Dependency updates",
+        "de": "Updates zu Abhängigkeiten",
+        "ru": "Обновления зависимостей",
+        "pt": "Atualizações de dependência",
+        "nl": "Updates voor afhankelijkheden",
+        "fr": "Mises à jour sur la dépendance",
+        "it": "Update sulle dipendenze",
+        "es": "Actualizaciones de dependencias",
+        "pl": "Aktualizacje zależności",
+        "uk": "Оновлення залежностей",
+        "zh-cn": "依赖关系更新"
+      },
       "1.3.4": {
         "en": "Dependency updates",
         "de": "Updates zu Abhängigkeiten",
@@ -80,19 +93,6 @@
         "pl": "Adapter wymaga teraz node.js >= 22\nDodano atrybuty stanu CRC IEEE 1547\nNaprawiono ostrzeżenia modułu sprawdzającego adaptery (jsonConfig, pollingTimeout)\nZastąpiono prostą funkcję setTimeout timerami zarządzanymi przez adapter\nDodano obliczony stan mocy ładowania (vitals.power_w)\nDodano określone role ioBroker dla wszystkich stanów\nUproszczone definicje atrybutów stanu\nNaprawiono odzyskiwanie po uruchomieniu: adapter teraz ponawia próbę, jeśli nie można uzyskać dostępu do skrzynki ściennej podczas uruchamiania\nOgraniczone opóźnienie ponownej próby do 1 godziny\nNaprawiono literówki w atrybutach stanu i nazwy symboli zastępczych\nZaktualizowana dokumentacja",
         "uk": "Адаптер тепер вимагає node.js >= 22\nДодано атрибути стану CRC IEEE 1547\nВиправлено попередження перевірки адаптера (jsonConfig, pollingTimeout)\nЗамінено простий setTimeout таймерами, керованими адаптером\nДодано розрахований стан заряджання (vitals.power_w)\nДодано окремі ролі ioBroker для всіх штатів\nСпрощені визначення атрибутів стану\nВиправлено відновлення під час запуску: адаптер тепер повторює спробу, якщо настінний зарядний пристрій недоступний під час запуску.\nОбмежена затримка повторної спроби – 1 година\nВиправлено друкарські помилки атрибутів стану та назви заповнювачів\nОновлена документація",
         "zh-cn": "适配器现在需要 node.js 版本 >= 22。\n添加了 IEEE 1547 CRC 状态属性\n修复了适配器检查器警告（jsonConfig、pollingTimeout）\n将普通的 setTimeout 替换为适配器管理的定时器\n添加了计算充电功率状态（vitals.power_w）\n为所有状态添加了特定的 ioBroker 角色\n简化的状态属性定义\n修复了启动恢复问题：如果启动时无法连接到墙盒，适配器现在会重试。\n重试延迟时间上限为 1 小时\n修复了状态属性拼写错误和占位符名称\n更新后的文档"
-      },
-      "1.1.0": {
-        "en": "Adapter requires node.js >= 20 now.\nAdded state attributes (and moved notifications to debug from info)\nCode optimization\nMigration to i18n",
-        "de": "Adapter benötigt jetzt node.js >= 20.\nHinzugefügt Zustandsattribute (und bewegte Benachrichtigungen, um von Info zu debug)\nCodeoptimierung\nMigration auf i18n",
-        "ru": "Адаптер требует node.js >= 20 сейчас.\nДобавлены атрибуты состояния (и перенесены уведомления для отладки из информации)\nОптимизация кода\nМиграция в i18n",
-        "pt": "O adaptador requer gnod.js >= 20 agora.\nAdicionado atributos de estado (e moveu notificações para depuração de informações)\nOtimização de código\nMigração para i18n",
-        "nl": "Voor de adapter zijn node.js > 20 nu nodig.\nToegevoegde statusattributen (en verplaatste meldingen naar debug vanuit info)\nCodeoptimalisatie\nMigratie naar i18n",
-        "fr": "Adapter nécessite node.js >= 20 maintenant.\nAjout d'attributs d'état (et notifications déplacées pour debug à partir d'info)\nOptimisation du code\nMigration vers i18n",
-        "it": "Adattatore richiede node.js >= 20 ora.\nAttributi di stato aggiunti (e le notifiche spostate a debug da informazioni)\nOttimizzazione del codice\nMigrazione a i18n",
-        "es": "Adaptador requiere node.js >= 20 ahora.\nAtributos estatales añadidos (y notificaciones movidas para depurar de la información)\nOptimización del código\nMigración a i18n",
-        "pl": "Adapter wymaga node.js > = 20 teraz.\nDodano atrybuty stanu (i przeniesiono powiadomienia do debugowania z informacji)\nOptymalizacja kodu\nMigracja do i18n",
-        "uk": "Адаптер вимагає node.js >= 20 тепер.\nДодано атрибути стану (і перемістили повідомлення про відключення з інформації)\nОптимізація коду\nМіграція до i18n",
-        "zh-cn": "适配器需要节点.js >= 20 现在.\n添加状态属性( 并移动通知以调试信息)\n代码优化\n迁移到i18n"
       }
     },
     "docs": {
